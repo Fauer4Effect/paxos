@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "messages.h"
 #include "data_structures.h"
@@ -59,14 +58,14 @@ bool check_accept(Accept *msg)
         return true;
     if (msg->view != LAST_INSTALLED)
         return true;
-    if (GLOBAL_HISTORY[msg->seq]->proposal == NULL)
+    if (GLOBAL_HISTORY[msg->seq]->proposal == 0)
         return true;
     return false;
 }
 
 void update_view_change(View_Change *msg)
 {
-    if (VC[msg->server_id] != NULL)
+    if (VC[msg->server_id] != 0)
         return;
     VC[msg->server_id] = msg;
 }
@@ -78,7 +77,7 @@ void update_prepare(Prepare *msg)
 
 void update_prepare_ok(Prepare_OK *msg)
 {
-    if (PREPARE_OKS[msg->server_id] != NULL)
+    if (PREPARE_OKS[msg->server_id] != 0)
         return;
     PREPARE_OKS[msg->server_id] = msg;
     // XXX right now we won't be doing reconciliation, so we know that the
@@ -94,10 +93,10 @@ void update_prepare_ok(Prepare_OK *msg)
 
 void update_proposal(Proposal *msg)
 {
-    if (GLOBAL_HISTORY[msg->seq]->global_ordered_update != NULL)
+    if (GLOBAL_HISTORY[msg->seq]->global_ordered_update != 0)
         return;
     Proposal *p_prime = GLOBAL_HISTORY[msg->seq];
-    if (p_prime != NULL)
+    if (p_prime != 0)
     {
         if (msg->view > p_prime->view)
         {
@@ -105,7 +104,7 @@ void update_proposal(Proposal *msg)
             int i;
             for (int i = 0; i < NUM_PEERS; i++)
             {
-                GLOBAL_HISTORY[msg->seq]->accepts[i] = NULL;
+                GLOBAL_HISTORY[msg->seq]->accepts[i] = 0;
             }
         }
     } else {
@@ -115,24 +114,24 @@ void update_proposal(Proposal *msg)
 
 void update_accept(Accept *msg)
 {
-    if (GLOBAL_HISTORY[msg->seq]->global_ordered_update != NULL)
+    if (GLOBAL_HISTORY[msg->seq]->global_ordered_update != 0)
         return;
     int i;
     int num_accepts = 0;
     for (i = 0; i < NUM_PEERS; i++)
     {
-        if (GLOBAL_HISTORY[msg->seq]->accepts[i] != NULL)
+        if (GLOBAL_HISTORY[msg->seq]->accepts[i] != 0)
             num_accepts++;
     }
     if (num_accepts > (NUM_PEERS / 2))
         return;
-    if (GLOBAL_HISTORY[msg->seq]->accepts[msg->server_id] != NULL)
+    if (GLOBAL_HISTORY[msg->seq]->accepts[msg->server_id] != 0)
         return;
     GLOBAL_HISTORY[msg->seq]->accepts[msg->server_id] = msg;
 }
 
 void update_globally_ordered_update(Globally_Ordered_Update *msg)
 {
-    if (GLOBAL_HISTORY[msg->seq]->global_ordered_update == NULL)
+    if (GLOBAL_HISTORY[msg->seq]->global_ordered_update == 0)
         GLOBAL_HISTORY[msg->seq]->global_ordered_update = msg;
 }

@@ -11,6 +11,11 @@
 #define Globally_Ordered_Update_Type 8
 
 typedef struct {
+    uint32_t msg_type;
+    uint32_t size;
+} Header;
+
+typedef struct {
     uint32_t client_id;                     // identifier of the sending client
     uint32_t server_id;                     // identifier of this client's server
     uint32_t timestamp;                     // client sequence number for this update
