@@ -36,7 +36,10 @@ typedef struct {
 typedef struct {
     uint32_t server_id;                     // identifier of the sending server
     uint32_t view;                          // view number for which this message applies
+    // XXX right now we are not doing reconciliation so we won't have any globally_ordered_updates
+    // if we were doing this for real I would probably break this into two separate data_lists
     // Globally_Ordered_Update *data_list;     // list of Proposals and Globally_Ordered_Updates
+    uint32_t data_list_size;                // how many entries in the data_list
     Proposal *data_list[];                  // list of Proposals
 } Prepare_OK;                   
 

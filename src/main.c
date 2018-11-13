@@ -15,13 +15,14 @@
 
 #include "messages.h"
 #include "data_structures.h"
-#include "conflict_checks.h"
+#include "update_globals.h"
 #include "logging.h"
 
 #define LOG_LEVEL DEBUG                 // set log level to debug for logging
 
 // server state variables
 int MY_SERVER_ID;                       // unique identifier for this server
+int NUM_PEERS;                          // how many peers in the protocol
 int STATE;                              // one of {LEADER_ELECTION, REG_LEADER, REG_NONLEADER}
                                         // defined in data_structures.h
 
