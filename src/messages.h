@@ -1,4 +1,4 @@
-
+#include <stdint.h>
 
 // define message types
 #define Client_Update_Type 1

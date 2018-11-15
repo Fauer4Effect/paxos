@@ -2,6 +2,7 @@
 
 #include "messages.h"
 #include "data_structures.h"
+#include "update_globals.h"
 
 bool check_view_change(View_Change *msg)
 {
