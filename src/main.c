@@ -24,6 +24,8 @@
 // server state variables   
 int MY_SERVER_ID;                       // unique identifier for this server
 int NUM_PEERS;                          // how many peers in the protocol
+char *PORT;                             // what port is it listening on
+char *PEERS[];                           // who all the list of peers
 int STATE;                              // one of {LEADER_ELECTION, REG_LEADER, REG_NONLEADER}
                                         // defined in data_structures.h
 
