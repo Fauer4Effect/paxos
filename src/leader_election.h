@@ -16,3 +16,8 @@ extern uint32_t *LAST_ENQUEUED[];
 extern bool PROGRESS_TIMER_SET;
 extern uint32_t PROGRESS_TIMEOUT;
 extern struct timeval PROGRESS_TIMER;
+extern int LAST_INSTALLED;
+
+bool preinstall_ready(int view);
+void shift_to_leader_election(int view);
+void received_view_change(View_Change *v);

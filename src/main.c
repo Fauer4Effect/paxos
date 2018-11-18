@@ -19,6 +19,7 @@
 #include "serialize.h"
 #include "multicast.h"
 #include "logging.h"
+#include "leader_election.h"
 
 #define LOG_LEVEL DEBUG                 // set log level to debug for logging
 int LAST_ENQUEUED_SIZE  = 32;           // size of LAST_ENQUEUED[]

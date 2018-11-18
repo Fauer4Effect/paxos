@@ -91,3 +91,18 @@ void received_view_change(View_Change *v)
         }
     }
 }
+
+void received_vc_proof(VC_Proof *v)
+{
+    if (v->installed > LAST_INSTALLED)
+    {
+        LAST_ATTEMPTED = v->installed;
+        if ((LAST_ATTEMPTED % NUM_PEERS) == MY_SERVER_ID)
+        {
+            shift_to_prepare_phase();
+        } else
+        {
+            shift_to_reg_non_leader();
+        }
+    }
+}
