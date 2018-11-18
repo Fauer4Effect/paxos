@@ -3,11 +3,8 @@
 #include "messages.h"
 #include "multicast.h"
 
-// TODO make this reliable:
-//      send acks
-//      keep track of acks
-//      resend as needed
-
+// Not reliable but paxos assumption doesn't require it
+// Messages may be lost, reordered, or duplicated.
 void multicast(unsigned char *header_buf, uint32_t header_size, 
                 unsigned char *msg_buf, uint32_t msg_size)
 {
