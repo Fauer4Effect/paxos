@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <sys/socket.h>
 
 #include "logging.h"
 #include "messages.h"
