@@ -23,6 +23,7 @@
 
 #define LOG_LEVEL DEBUG                 // set log level to debug for logging
 int LAST_ENQUEUED_SIZE  = 32;           // size of LAST_ENQUEUED[]
+int UPDATE_QUEUE_SIZE = 32;             // size of UPDATE_QUEUE[]
 
 // server state variables   
 int MY_SERVER_ID;                       // unique identifier for this server

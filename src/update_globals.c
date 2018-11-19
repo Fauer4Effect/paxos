@@ -136,3 +136,26 @@ void update_globally_ordered_update(Globally_Ordered_Update *msg)
     if (GLOBAL_HISTORY[msg->seq]->global_ordered_update == 0)
         GLOBAL_HISTORY[msg->seq]->global_ordered_update = msg;
 }
+
+void shift_to_reg_leader()
+{
+    STATE = REG_LEADER;
+    enqueue_unbound_pending_updates();
+    remove_bound_updates_from_queue();
+    LAST_PROPOSED = LOCAL_ARU;
+    send_proposal();
+}
+
+void shift_to_reg_non_leader()
+{
+    STATE = REG_NONLEADER;
+    LAST_INSTALLED = LAST_ATTEMPTED;
+    // clear update queue
+    int i;
+    for (i = 0 ; i < UPDATE_QUEUE_SIZE; i++)
+    {
+        free(UPDATE_QUEUE[i]);
+        UPDATE_QUEUE[i] = 0;
+    }
+    // XXX sync to disk
+}

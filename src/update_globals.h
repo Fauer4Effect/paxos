@@ -8,6 +8,11 @@ extern int LAST_INSTALLED;
 extern Global_Slot *GLOBAL_HISTORY[];
 extern View_Change *VC[];
 extern Prepare *PREPARED;
+extern int LAST_PROPOSED;
+extern int LOCAL_ARU;
+extern int LAST_ATTEMPTED;
+extern Client_Update *UPDATE_QUEUE[];
+extern int UPDATE_QUEUE_SIZE;
 
 // Conflict checks to run on incoming messages. Messages for which
 // a conflict exists are discarded
@@ -25,3 +30,6 @@ void update_prepare_ok(Prepare_OK *msg);
 void update_proposal(Proposal *msg);
 void update_accept(Accept *msg);
 void update_globally_ordered_update(Globally_Ordered_Update *msg);
+
+void shift_to_reg_leader();
+void shift_to_reg_non_leader();
