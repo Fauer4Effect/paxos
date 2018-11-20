@@ -9,7 +9,7 @@ extern int NUM_PEERS;
 extern View_Change *VC[];
 extern Prepare *PREPARED;
 extern Prepare *PREPARE_OKS[];
-extern int LAST_ENQUEUED_SIZE;
+extern int MAX_CLIENT_ID;
 extern int LAST_ATTEMPTED;
 extern int MY_SERVER_ID;
 extern uint32_t *LAST_ENQUEUED[];

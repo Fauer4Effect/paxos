@@ -59,11 +59,13 @@ void add_to_pending_updates(Client_Update *u)
     // XXX SYNC to disk
 }
 
+// TODO Code this
 void enqueue_unbound_pending_updates()
 {
 
 }
 
+// TODO Code this
 void remove_bound_updates_from_queue()
 {
 

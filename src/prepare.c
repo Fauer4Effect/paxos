@@ -76,7 +76,7 @@ void shift_to_prepare_phase()
     unsigned char *header_buf = malloc(sizeof(Header));
     pack_header(header, header_buf);
 
-    multicast(header_buf, sizeof(header_buf), prepare_buf, sizeof(prepare_buf));
+    multicast(header_buf, sizeof(Header), prepare_buf, header->size);
 
     free(prepare_buf);
     free(prepare);

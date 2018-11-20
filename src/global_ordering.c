@@ -24,11 +24,11 @@ void received_proposal(Proposal *p)
 
     Header *head = malloc(sizeof(Header));
     head->msg_type = Accept_Type;
-    head->size = sizeof(acc_buf);
+    head->size = sizeof(Accept);
     unsigned char *head_buf = malloc(sizeof(Header));
     pack_header(head, head_buf);
 
-    multicast(head_buf, sizeof(head_buf), acc_buf, sizeof(acc_buf));
+    multicast(head_buf, sizeof(Header), acc_buf, head->size);
     free(head_buf);
     free(head);
     free(acc_buf);
@@ -109,11 +109,12 @@ void send_proposal()
 
     Header *head = malloc(sizeof(Header));
     head->msg_type = Proposal_Type;
-    head->size = sizeof(prop_buf);
+    // server_id + view + seq + Client_Update
+    head->size = (sizeof(uint32_t)*3) + sizeof(Client_Update) - ;
     unsigned char *head_buf = malloc(sizeof(Header));
     pack_header(head, head_buf);
     
-    multicast(head_buf, sizeof(head_buf), prop_buf, sizeof(prop_buf));
+    multicast(head_buf, sizeof(Header), prop_buf, head->size);
     free(head_buf);
     free(head);
     free(prop_buf);

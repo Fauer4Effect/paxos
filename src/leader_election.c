@@ -19,7 +19,6 @@ bool preinstall_ready(int view)
 
 void shift_to_leader_election(int view)
 {
-    // ??? VC[] indexed by server id so should only be as big as num peers?
     int i;
     for (i = 0; i < NUM_PEERS; i++)
     {
@@ -27,6 +26,7 @@ void shift_to_leader_election(int view)
         VC[i] = 0;
     }
     free(PREPARED);
+    PREPARED = 0;
 
     // ??? size of prepare_oks[] should just be size of num peers right?
     for (i = 0; i < NUM_PEERS; i++)
@@ -35,7 +35,7 @@ void shift_to_leader_election(int view)
         PREPARE_OKS[i] = 0;
     }
 
-    for (i = 0; i < LAST_ENQUEUED_SIZE; i++)
+    for (i = 0; i < MAX_CLIENT_ID; i++)
     {
         free(LAST_ENQUEUED[i]);
         LAST_ENQUEUED[i] = 0;
@@ -52,11 +52,11 @@ void shift_to_leader_election(int view)
 
     Header *header = malloc(sizeof(Header));
     header->msg_type = View_Change_Type;
-    header->size = sizeof(vc_buf);
+    header->size = sizeof(View_Change);
     unsigned char *header_buf = malloc(sizeof(Header));
     pack_header(header, header_buf);
 
-    multicast(header_buf, sizeof(header_buf), vc_buf, sizeof(vc_buf));
+    multicast(header_buf, sizeof(Header), vc_buf, header->size;
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Multicast View Change %d\n", vc->attempted);
 
     free(header_buf);
