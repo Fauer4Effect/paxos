@@ -25,8 +25,8 @@
 #include "update_globals.h"
 
 #define LOG_LEVEL DEBUG                 // set log level to debug for logging
-int LAST_ENQUEUED_SIZE  = 32;           // size of LAST_ENQUEUED[]
-int UPDATE_QUEUE_SIZE = 32;             // size of UPDATE_QUEUE[]
+int MAX_CLIENT_ID  = 32;                // size of arrays that are indexed by client id
+                                        // updated by increase_array_size()
 
 // server state variables   
 int MY_SERVER_ID;                       // unique identifier for this server
@@ -56,10 +56,11 @@ struct timeval PROGRESS_TIMER;          // timeout on making global progress
 bool PROGRESS_TIMER_SET;                // keep track of whether the progress time was set
 uint32_t PROGRESS_TIMEOUT;              // how long to wait until PROGRESS_TIMER is timed out
 // FIXME this should be an array of timers arranged by client id
-struct timeval UPDATE_TIMER;            // timeout on globally ordering a specific update
+// struct timeval UPDATE_TIMER;            // timeout on globally ordering a specific update
+uint32_t *UPDATE_TIMER[];               // array of timeouts, indexed by client id
 
 // client handling variables
-Client_Update *UPDATE_QUEUE[];          // queue of Client_Update messages
+node_t *UPDATE_QUEUE;          // queue of Client_Update messages
 // XXX pretty sure the idea was to have this as the tv_sec part of the timestamp
 uint32_t *LAST_EXECUTED[];              // array of timestamps, indexed by client_id
 uint32_t *LAST_ENQUEUED[];              // array of timestamps, indexed by client_id

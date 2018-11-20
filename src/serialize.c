@@ -116,12 +116,12 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
     packi32(buf, msg->view);
     buf += 4;
-    packi32(buf, msg->data_list_size);
+    packi32(buf, msg->size);
     buf += 4;
 
     int index = 0;
     int stored = 0;
-    while (stored < msg->data_list_size)
+    while (stored < msg->size)
     {
         if (msg->data_list[index] != 0)
         {
@@ -139,11 +139,11 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
     msg->view = unpacki32(buf);
     buf += 4;
-    msg->data_list_size = unpacki32(buf);
+    msg->size = unpacki32(buf);
     buf += 4;
 
     int index = 0;
-    while (index < msg->data_list_size)
+    while (index < msg->size)
     {
         msg->data_list[index] = unpacki32(buf);
         buf += 4;
@@ -160,7 +160,8 @@ void pack_proposal(Proposal *msg, unsigned char *buf)
     buf += 4;
     packi32(buf, msg->seq);
     buf += 4;
-    packi32(buf, msg->update);
+
+    pack_client_update(msg->update, buf);
 }
 
 void unpack_proposal(Proposal *msg, unsigned char *buf)
@@ -171,7 +172,10 @@ void unpack_proposal(Proposal *msg, unsigned char *buf)
     buf += 4;
     msg->seq = unpacki32(buf);
     buf += 4;
-    msg->update = unpacki32(buf);
+    
+    Client_Update *update = malloc(sizeof(Client_Update));
+    unpack_client_update(update, buf);
+    msg->update = update;
 }
 
 void pack_accept(Accept *msg, unsigned char *buf)
