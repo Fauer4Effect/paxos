@@ -1,27 +1,24 @@
 
+#include "data_structures.h"
 #include "prepare.h"
 #include "messages.h"
 #include "serialize.h"
 #include "multicast.h"
 
-datalist_t *construct_datalist(int aru)
+node_t *construct_datalist(int aru)
 {
-    datalist_t *datalist = malloc(sizeof(datalist_t));
-    int i = aru + 1;
-    int count;
-    while (GLOBAL_HISTORY[i] != 0)
+    node_t *datalist = malloc(sizeof(node_t));
+    int i;
+    for (i = aru+1; i < MAX_CLIENT_ID; i++)
     {
-        count++;
+        if (GLOBAL_HISTORY[i]->global_ordered_update != 0)
+        {
+            append_to_list(GLOBAL_HISTORY[i]->global_ordered_update, datalist);
+        } else
+        {
+            append_to_list(GLOBAL_HISTORY[i]->proposal, datalist);
+        }
     }
-    datalist->size = count;
-    datalist->proposals = malloc(sizeof(Proposal) * count);
-    
-    i = aru;
-    while (GLOBAL_HISTORY[i] != 0)
-    {
-        datalist->proposals = GLOBAL_HISTORY[i]->proposal;
-    }
-
     return datalist;
 }
 
@@ -49,7 +46,7 @@ void shift_to_prepare_phase()
     // ??? Apply prepare to data structures
     PREPARED = prepare;
 
-    datalist_t *datalist = construct_datalist(LOCAL_ARU);
+    node_t *datalist = construct_datalist(LOCAL_ARU);
 
     Prepare_OK *prepare_ok = malloc(sizeof(Prepare_OK));
     prepare_ok->server_id = MY_SERVER_ID;
@@ -93,7 +90,7 @@ void received_prepare(Prepare *prepare)
     {
         // ??? apply prepare to data structures
         PREPARED = prepare;
-        datalist_t *datalist = construct_datalist(prepare->local_aru);
+        node_t *datalist = construct_datalist(prepare->local_aru);
 
         Prepare_OK *prepare_ok = malloc(sizeof(Prepare_OK));
         prepare_ok->server_id = MY_SERVER_ID;

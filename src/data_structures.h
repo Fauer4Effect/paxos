@@ -10,14 +10,18 @@ extern int MAX_CLIENT_ID;
 
 typedef struct {
     Proposal *proposal;         // latest Proposal accepted for this sequence number, if any
-    Accept *accepts[];           // array of corresponding Accept messages, indexed by server_id
+    Accept *accepts[];          // array of corresponding Accept messages, indexed by server_id
+                                // size of NUM_PEERS
     Globally_Ordered_Update *global_ordered_update;
                                 // ordered update for this sequence number, if any
 } Global_Slot;
 
 typedef struct node {
-    void *data;
-    struct node *next;
+    void *data;                 // pointer to arbitrary data
+    struct node *next;          // pointer to next node
+    int data_type;              // normally you would only want to have a single data type in the
+                                // list but the data_list in the prepare_ok message has two kinds
+                                // so we can support this as wellS
 } node_t;
 
 int list_length(node_t *list);

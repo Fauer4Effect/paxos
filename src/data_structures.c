@@ -66,6 +66,7 @@ void *pop_from_queue(node_t *q)
 uint32_t *increase_array_size(uint32_t *old_array)
 {
     uint32_t *new_array = malloc(sizeof(uint32_t) * 2 * MAX_CLIENT_ID);
+    memset(new_arry, 0, 2 * MAX_CLIENT_ID);
     int i;
     for (i = 0; i < MAX_CLIENT_ID; i++)
     {

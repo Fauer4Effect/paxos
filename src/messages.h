@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "data_structures.h"
+
 // define message types
 #define Client_Update_Type 1
 #define View_Change_Type 2
@@ -48,8 +50,9 @@ typedef struct {
 typedef struct {
     uint32_t server_id;                     // identifier of the sending server
     uint32_t view;                          // view number for which this message applies
-    uint32_t size;
-    datalist_t *data_list;
+    node_t data_list;                       // list of Proposals and Globally_Ordered_Updates
+    // uint32_t size;
+    // datalist_t *data_list;
     // Globally_Ordered_Update *data_list;     // list of Proposals and Globally_Ordered_Updates
     // uint32_t data_list_size;                // how many entries in the data_list
     // Proposal *data_list[];                  // list of Proposals
