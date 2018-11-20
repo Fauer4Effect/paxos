@@ -47,3 +47,17 @@ int clear_list(node_t *list)
     }
     return 0;
 }
+
+void *pop_from_queue(node_t *q)
+{
+    void *data = q->data;
+    if (q->next != NULL)
+    {
+        q = q->next;
+    } else
+    {
+        q->data = NULL;
+    }
+    
+    return data;
+}
