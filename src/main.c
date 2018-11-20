@@ -52,11 +52,12 @@ Global_Slot *GLOBAL_HISTORY[];          // array of global_slots indexed by sequ
 struct timeval PROGRESS_TIMER;          // timeout on making global progress
 bool PROGRESS_TIMER_SET;                // keep track of whether the progress time was set
 uint32_t PROGRESS_TIMEOUT;              // how long to wait until PROGRESS_TIMER is timed out
-// ??? should this be an array of timers arranged by client id
+// FIXME this should be an array of timers arranged by client id
 struct timeval UPDATE_TIMER;            // timeout on globally ordering a specific update
 
 // client handling variables
 Client_Update *UPDATE_QUEUE[];          // queue of Client_Update messages
+// XXX pretty sure the idea was to have this as the tv_sec part of the timestamp
 uint32_t *LAST_EXECUTED[];              // array of timestamps, indexed by client_id
 uint32_t *LAST_ENQUEUED[];              // array of timestamps, indexed by client_id
 Client_Update *PENDING_UPDATES[];       // array of Client_Update messages, indexed by client_id
