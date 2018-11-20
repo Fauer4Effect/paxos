@@ -59,7 +59,7 @@ typedef struct {
     uint32_t server_id;                     // identifier of the sending server
     uint32_t view;                          // view in which this proposal is being made
     uint32_t seq;                           // sequence number of this proposal
-    uint32_t update;                        // client update being bound to seq in this proposal
+    Client_Update *update;                   // client update being bound to seq in this proposal
 } Proposal;
 
 typedef struct {

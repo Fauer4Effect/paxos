@@ -151,6 +151,7 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     }
 }
 
+// FIXME NEED TO FIX THE PACKING AND UNPACKING
 void pack_proposal(Proposal *msg, unsigned char *buf)
 {
     packi32(buf, msg->server_id);

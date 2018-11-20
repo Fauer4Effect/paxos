@@ -13,6 +13,8 @@ extern int LOCAL_ARU;
 extern int LAST_ATTEMPTED;
 extern Client_Update *UPDATE_QUEUE[];
 extern int UPDATE_QUEUE_SIZE;
+extern int NUM_PEERS;
+extern int Prepare *PREPARE_OKS[];
 
 // Conflict checks to run on incoming messages. Messages for which
 // a conflict exists are discarded

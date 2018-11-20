@@ -52,6 +52,7 @@ Global_Slot *GLOBAL_HISTORY[];          // array of global_slots indexed by sequ
 struct timeval PROGRESS_TIMER;          // timeout on making global progress
 bool PROGRESS_TIMER_SET;                // keep track of whether the progress time was set
 uint32_t PROGRESS_TIMEOUT;              // how long to wait until PROGRESS_TIMER is timed out
+// ??? should this be an array of timers arranged by client id
 struct timeval UPDATE_TIMER;            // timeout on globally ordering a specific update
 
 // client handling variables
