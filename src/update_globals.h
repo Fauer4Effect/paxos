@@ -15,9 +15,11 @@ extern Client_Update *UPDATE_QUEUE[];
 extern int UPDATE_QUEUE_SIZE;
 extern int NUM_PEERS;
 extern int Prepare *PREPARE_OKS[];
+extern bool PROGRESS_TIMER_SET;
 
-// Conflict checks to run on incoming messages. Messages for which
-// a conflict exists are discarded
+// Conflict checks to run on incoming messages. 
+// Messages for which a conflict exists are discarded.
+// If the function returns true then there is a conflit.
 bool check_view_change(View_Change *msg);
 bool check_vc_proof(VC_Proof *msg);
 bool check_prepare(Prepare *msg);
@@ -26,12 +28,14 @@ bool check_proposal(Proposal *msg);
 bool check_accept(Accept *msg);
 
 // rules for updating the Global_history
-void update_view_change(View_Change *msg);
-void update_prepare(Prepare *msg);
-void update_prepare_ok(Prepare_OK *msg);
-void update_proposal(Proposal *msg);
-void update_accept(Accept *msg);
-void update_globally_ordered_update(Globally_Ordered_Update *msg);
+//in the Paxos for Systems Builders documentation this is referred to as
+// "applying" the message
+void apply_view_change(View_Change *msg);
+void apply_prepare(Prepare *msg);
+void apply_prepare_ok(Prepare_OK *msg);
+void apply_proposal(Proposal *msg);
+void apply_accept(Accept *msg);
+void apply_globally_ordered_update(Globally_Ordered_Update *msg);
 
 void shift_to_reg_leader();
 void shift_to_reg_non_leader();

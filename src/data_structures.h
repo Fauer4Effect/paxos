@@ -25,7 +25,7 @@ typedef struct node {
 } node_t;
 
 int list_length(node_t *list);
-int append_to_list(void *new_data, node_t *list);
+int append_to_list(void *new_data, node_t *list, int data_type);
 int clear_list(node_t *list);
 void *pop_from_queue(node_t *q);
 uint32_t *increase_array_size(uint32_t *old_array);
