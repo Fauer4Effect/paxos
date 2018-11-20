@@ -13,13 +13,16 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "messages.h"
+#include "client_update.h"
 #include "data_structures.h"
-#include "update_globals.h"
-#include "serialize.h"
-#include "multicast.h"
-#include "logging.h"
+#include "global_ordering.h"
 #include "leader_election.h"
+#include "logging.h"
+#include "messages.h"
+#include "multicast.h"
+#include "prepare.h"
+#include "serialize.h"
+#include "update_globals.h"
 
 #define LOG_LEVEL DEBUG                 // set log level to debug for logging
 int LAST_ENQUEUED_SIZE  = 32;           // size of LAST_ENQUEUED[]
