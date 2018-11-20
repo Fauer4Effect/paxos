@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "leader_election.h"
+#include "update_globals.h"
 
 bool preinstall_ready(int view)
 {
@@ -56,28 +57,27 @@ void shift_to_leader_election(int view)
     unsigned char *header_buf = malloc(sizeof(Header));
     pack_header(header, header_buf);
 
-    multicast(header_buf, sizeof(Header), vc_buf, header->size;
+    multicast(header_buf, sizeof(Header), vc_buf, header->size);
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Multicast View Change %d\n", vc->attempted);
 
     free(header_buf);
     free(header);
     free(vc_buf);
 
-    // ??? Apply vc to data structures? Just update VC[]?
-    VC[MY_SERVER_ID] = vc;
+    // Apply vc to data structures? Just update VC[]?
+    apply_view_change(vc);
 }
 
 void received_view_change(View_Change *v)
 {
-    if ((v->attempted > LAST_ATTEMPTED) && PROGRESS_TIMER_SET)
+    if ((v->attempted > LAST_ATTEMPTED) && !(PROGRESS_TIMER_SET))
     {
         shift_to_leader_election(v->attempted);
-        // ??? Apply V? does this just mean update VC[]
-        VC[v->server_id] = v;
+        apply_view_change(vc);
     }
-    if (v->attempted = LAST_ATTEMPTED)
+    if (v->attempted == LAST_ATTEMPTED)
     {
-        VC[v->server_id] = v;
+        apply_view_change(v);
         if (preinstall_ready(v->attempted))
         {
             PROGRESS_TIMEOUT *= 2;

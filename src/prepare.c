@@ -43,8 +43,8 @@ void shift_to_prepare_phase()
     prepare->server_id = MY_SERVER_ID;
     prepare->view = LAST_INSTALLED;
     prepare->local_aru = LOCAL_ARU;
-    // ??? Apply prepare to data structures
-    PREPARED = prepare;
+    // Apply prepare to data structures
+    apply_prepare(prepare);
 
     node_t *datalist = construct_datalist(LOCAL_ARU);
 
@@ -65,8 +65,6 @@ void shift_to_prepare_phase()
 
     // XXX Sync to disk
 
-    // server_id + view + size + datalist
-    // datalist is uint32_t + sizeof(Proposal) * prepare->size
     unsigned char *prepare_buf = malloc(sizeof(Prepare));
     pack_prepare(prepare, prepare_buf);
 
@@ -79,7 +77,6 @@ void shift_to_prepare_phase()
     multicast(header_buf, sizeof(Header), prepare_buf, header->size);
 
     free(prepare_buf);
-    free(prepare);
     free(header_buf);
     free(header);
 }
