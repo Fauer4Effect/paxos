@@ -138,8 +138,8 @@ void received_prepare(Prepare *prepare)
     // XXX Send to leader prepare_ok
     Header *header = malloc(sizeof(Header));
     header->msg_type = Prepare_OK_Type;
-    // server_id + view + datalist_storage_reqs
-    header->size = (sizeof(uint32_t) * 2) + datalist_storage_reqs(datalist);
+    // server_id + view + size_of_datalist + datalist_storage_reqs
+    header->size = (sizeof(uint32_t) * 3) + datalist_storage_reqs(datalist);
     unsigned char *header_buf = malloc(sizeof(Header));
     pack_header(header, header_buf);
 

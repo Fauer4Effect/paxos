@@ -18,6 +18,13 @@ int list_length(node_t *list)
 
 int append_to_list(void *new_data, node_t *list, int data_type)
 {
+    if (list->data_type == 0)
+    {
+        list->data = new_data;
+        list->next = NULL;
+        list->data_type = data_type;
+        return 0;
+    }
     node_t *new_node = malloc(sizeof(node_t));
     if (new_node == NULL)
     {

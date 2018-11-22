@@ -116,20 +116,33 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
     packi32(buf, msg->view);
     buf += 4;
-    packi32(buf, msg->size);
+    
+    int datalist_size = list_length(msg->datalist);
+    packi32(buf, datalist_size);
     buf += 4;
 
-    int index = 0;
+    // datalist is msg->size nodes in size
+    // for each node in the datalist we need to pack it based on
+    // its type
     int stored = 0;
-    while (stored < msg->size)
+    node_t *datalist = msg->datalist;
+    while (stored < datalist_size)
     {
-        if (msg->data_list[index] != 0)
+        // each node has void *data, node *next, uint32_t data_type
+        packi32(buf, datalist->data_type);
+        buf += 4
+        if (datalist->data_type == Globally_Ordered_Update_Type)
         {
-            packi32(buf, msg->data_list[index]);
-            buf += 4;
-            stored++;
+            pack_global_ordered(datalist->data, buf);
+            buf += 4;               // carry over from pack_global_ordered
         }
-        index++;
+        else if (datalist->data_type == Proposal_Type)
+        {
+            pack_proposal(datalist->data_type, buf);
+            buf += 4;               // carry over  from pack_client_update
+        }
+        datalist = datalist->next;      // advance datalist
+        stored++;
     }
 }
 
@@ -139,16 +152,39 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
     msg->view = unpacki32(buf);
     buf += 4;
-    msg->size = unpacki32(buf);
+
+    node_t *datalist = malloc(sizeof(node_t));
+
+    int datalist_size = unpacki32(buf);
     buf += 4;
 
     int index = 0;
-    while (index < msg->size)
+    while (index < datalist_size)
     {
-        msg->data_list[index] = unpacki32(buf);
+        int data_type = unpacki32(buf);
         buf += 4;
+
+        if (data_type == Globally_Ordered_Update_Type)
+        {
+            Globally_Ordered_Update *update = malloc(sizeof(Globally_Ordered_Update));
+            unpack_global_ordered(update, buf);
+            buf += 4;               // carry over from unpack_global_ordered
+
+            append_to_list(update, datalist, data_type);
+        }
+        else if (data_type == Proposal_Type)
+        {
+            Proposal *proposal = malloc(sizeof(Proposal));
+            unpack_proposal(proposal, buf);
+            buf += 4;               // carry over from unpack_proposal
+
+            append_to_list(proposal, datalist, data_type);
+        }
+
         index++;
     }
+
+    msg->datalist = datalist;
 }
 
 void pack_proposal(Proposal *msg, unsigned char *buf)
