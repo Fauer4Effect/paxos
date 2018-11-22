@@ -5,18 +5,49 @@
 #include "serialize.h"
 #include "multicast.h"
 
+// datalist_storage_reqs = num nodes * storage of each node
+// a node has data_type + pointer to next + actual storage of the data
+// data is either globally_ordered_update or proposal
+// globally_ordered_update is uint32_t * 3
+// proposal has the uin32_t * 3 + client_update
+// client_update is uin32_t * 4
+int datalist_storage_reqs(node_t *datalist)
+{
+    int size = 0;
+    int num_nodes = list_length(datalist);
+    int i;
+    for (i = 0; i < num_nodes; i++)
+    {
+        size += (sizeof(uint32_t) + sizeof(node *));
+        if (datalist->data_type == Globally_Ordered_Update_Type)
+        {
+            size += (sizeof(uint32_t) * 3);
+        }
+        else if (datalist->data_type == Proposal_Type)
+        {
+            size += (sizeof(uint32_t) * 7);
+        }
+        datalist = datalist->next;
+    }
+    return size;
+}
+
 node_t *construct_datalist(int aru)
 {
     node_t *datalist = malloc(sizeof(node_t));
     int i;
     for (i = aru+1; i < MAX_CLIENT_ID; i++)
     {
+        if (GLOBAL_HISTORY[i] == 0){
+            continue;
+        }
         if (GLOBAL_HISTORY[i]->global_ordered_update != 0)
         {
-            append_to_list(GLOBAL_HISTORY[i]->global_ordered_update, datalist);
+            append_to_list(GLOBAL_HISTORY[i]->global_ordered_update, datalist, 
+                            Globally_Ordered_Update_Type);
         } else
         {
-            append_to_list(GLOBAL_HISTORY[i]->proposal, datalist);
+            append_to_list(GLOBAL_HISTORY[i]->proposal, datalist, Proposal_Type);
         }
     }
     return datalist;
@@ -51,15 +82,14 @@ void shift_to_prepare_phase()
     Prepare_OK *prepare_ok = malloc(sizeof(Prepare_OK));
     prepare_ok->server_id = MY_SERVER_ID;
     prepare_ok->view = LAST_INSTALLED;
-    prepare_ok->size = datalist->size;
+    prepare_ok->size = list_length(datalist);
     prepare_ok->data_list = datalist;
 
     PREPARE_OKS[MY_SERVER_ID] = prepare_ok;
 
     int i;
-    for (i = 0; i < LAST_ENQUEUED_SIZE; i++)
+    for (i = 0; i < MAX_CLIENT_ID; i++)
     {
-        free(LAST_ENQUEUED[i]);
         LAST_ENQUEUED[i] = 0;
     }
 
@@ -83,32 +113,48 @@ void shift_to_prepare_phase()
 
 void received_prepare(Prepare *prepare)
 {
+    Prepare_OK *prepare_ok;
+    int leader_id = prepare->view % NUM_PEERS;
     if (STATE == LEADER_ELECTION)
     {
-        // ??? apply prepare to data structures
-        PREPARED = prepare;
+        apply_prepare(prepare);
+
         node_t *datalist = construct_datalist(prepare->local_aru);
 
-        Prepare_OK *prepare_ok = malloc(sizeof(Prepare_OK));
+        prepare_ok = malloc(sizeof(Prepare_OK));
         prepare_ok->server_id = MY_SERVER_ID;
         prepare_ok->view = prepare->view;
-        prepare_ok->size = datalist->size;
+        prepare_ok->size = list_length(datalist);
         prepare_ok->data_list = datalist;
         PREPARE_OKS[MY_SERVER_ID] = prepare_ok;
         
         shift_to_reg_non_leader();
-
-        // XXX Send to leader prepare_ok
     } else
     {
         // already installed the view
-        // XXX send to leader Prepared_oks[my_server_id]
+        prepare_ok = PREPARE_OKS[MY_SERVER_ID];
     }
+
+    // XXX Send to leader prepare_ok
+    Header *header = malloc(sizeof(Header));
+    header->msg_type = Prepare_OK_Type;
+    // server_id + view + datalist_storage_reqs
+    header->size = (sizeof(uint32_t) * 2) + datalist_storage_reqs(datalist);
+    unsigned char *header_buf = malloc(sizeof(Header));
+    pack_header(header, header_buf);
+
+    unsigned char *prepare_ok_buf = malloc(header->size);
+    pack_prepare_ok(prepare_ok, prepare_ok_buf);
+    send_to_single_host(header_buf, sizeof(Header), prepare_ok_buf, header->size, leader_id);
+
+    free(prepare_ok_buf);
+    free(header_buf);
+    free(header);
 }
 
 void received_prepare_ok(Prepare_OK *prepare_ok)
 {
-    // XXX Apply to data structures
+    apply_prepare_ok(prepare_ok);
     if (view_prepared_ready(prepare_ok->view))
     {
         shift_to_reg_leader();
