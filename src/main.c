@@ -73,3 +73,105 @@ Client_Update *PENDING_UPDATES[];       // array of Client_Update messages, inde
 // TODO when initializing node_t objects (really all of the structs)
 // need to explicitly set the pointers to null and make sure that all the code
 // expects those to be null not zero
+
+void *get_in_addr(struct sockaddr *sa)
+{
+    if (sa->sa_family == AF_INET)
+    {
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+char **open_parse_hostfile(char *hostfile)
+{
+    char hostname[64];
+    int cur_hostname = gethostname(hostname, 63);
+    logger(0, LOG_LEVEL, PROCESS_ID, "Got hostname: %s\n", hostname);
+    if (cur_hostname == -1)
+    {
+        logger(1, LOG_LEVEL, PROCESS_ID, "Could not get hostname\n");
+        exit(1);
+    }
+
+    FILE *fp = fopen(hostfile, "r");
+    if (fp == NULL)
+    {
+        logger(1, LOG_LEVEL, PROCESS_ID, "Could not open hostfile\n");
+        exit(1);
+    }
+    logger(0, LOG_LEVEL, PROCESS_ID, "Opened hostfile\n");
+
+    // get number of lines in hostfile
+    int numLines = 0;
+    char chr;
+    chr = getc(fp);
+    while (chr != EOF) 
+    {
+        if (chr == '\n')
+            numLines ++;
+        chr = getc(fp);
+    }
+    logger(0, LOG_LEVEL, PROCESS_ID, "Hostfile is %d lines\n", numLines);
+    fseek(fp, 0, SEEK_SET);     // reset to beginning
+
+    // malloc 2-D array of hostnames
+    char **hosts = malloc(numLines * sizeof(char *));
+    // keep track of size of host file
+    NUM_HOSTS = numLines;
+    if (hosts == NULL)
+    {
+        logger(1, LOG_LEVEL, PROCESS_ID, "Could not malloc hosts array\n");
+        exit(1);
+    }
+
+    // read in all the host names
+    int i = 0;
+    for(i = 0; i < NUM_HOSTS; i++)
+    {
+        hosts[i] = (char *)malloc(255);
+        if (hosts[i] == NULL)
+        {
+            logger(1, LOG_LEVEL, PROCESS_ID, "Error on malloc");
+            exit(1);
+        }
+        fgets(hosts[i], 255, fp);
+        char *newline_pos;
+        if ((newline_pos=strchr(hosts[i], '\n')) != NULL)
+            *newline_pos = '\0';
+        logger(0, LOG_LEVEL, PROCESS_ID, "Host %s read in\n", hosts[i]);
+        if ((strcmp(hosts[i], hostname)) == 0)
+        {
+            PROCESS_ID = i+1;
+            logger(0, LOG_LEVEL, PROCESS_ID, "Process id: %d\n", PROCESS_ID);
+        }
+    }
+
+    return hosts;
+}
+
+int main(int argc, char *argv[])
+{
+    if (argc < 5)
+    {
+        logger(1, LOG_LEVEL, PROCESS_ID, "USAGE:\n paxos -p port -h hostfile\n");
+        exit(1);
+    }
+
+    if (strcmp(argv[1], "-p") == 0)
+    {
+        PORT = argv[2];
+    }
+    if (atoi(PORT) < 10000 || atoi(PORT) > 65535)
+    {
+        logger(1, LOG_LEVEL, PROCESS_ID, "Port number out of range 10000 - 65535\n");
+        exit(1);
+    }
+    if (strcmp(argv[3], "-h") == 0)
+    {
+        PEERS = open_parse_hostfile(argv[4]);
+    }
+
+    logger(0, LOG_LEVEl, PROCESS_ID, "Command line parsed\n");
+}
