@@ -168,11 +168,6 @@ void shift_to_reg_non_leader()
     STATE = REG_NONLEADER;
     LAST_INSTALLED = LAST_ATTEMPTED;
     // clear update queue
-    int i;
-    for (i = 0 ; i < UPDATE_QUEUE_SIZE; i++)
-    {
-        free(UPDATE_QUEUE[i]);
-        UPDATE_QUEUE[i] = 0;
-    }
+    clear_list(UPDATE_QUEUE);
     // XXX sync to disk
 }

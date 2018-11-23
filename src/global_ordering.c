@@ -7,16 +7,17 @@
 #include "serialize.h"
 #include "multicast.h"
 #include "data_structures.h"
+#include "logging.h"
 
 void received_proposal(Proposal *p)
 {
-    // XXX apply proposal
-    LAST_PROPOSED = p->seq;
-    GLOBAL_HISTORY[p->seq]->proposal = p;
+    // apply proposal
+    apply_proposal(p);
+
     Accept *acc = malloc(sizeof(Accept));
     acc->server_id = MY_SERVER_ID;
-    acc->seq = LAST_PROPOSED;
-    acc->view = LAST_INSTALLED;
+    acc->view = p->view;
+    acc->seq = p->seq;
     unsigned char *acc_buf = malloc(sizeof(Accept));
     pack_accept(acc, acc_buf);
 
@@ -35,19 +36,21 @@ void received_proposal(Proposal *p)
     free(acc);
 }
 
-// FIXME this probably broken
 void received_accept(Accept *acc)
 {
-    // XXX apply accept
-    LAST_PROPOSED = acc->seq;
-    GLOBAL_HISTORY[acc->seq]->accepts[acc->server_id] = acc;
+    // apply accept
+    apply_accept(acc);
+
     if (globally_ordered_ready(acc->seq))
     {
+        // ??? What happens to the global->update, is this just blank?
         Globally_Ordered_Update *global = malloc(sizeof(Globally_Ordered_Update));
         global->server_id = MY_SERVER_ID;
         global->seq = acc->seq;
-        // XXX apply globally ordered
-        GLOBAL_HISTORY[acc->seq]->global_ordered_update = global;
+        
+        // apply globally ordered
+        apply_globally_ordered_update(global);
+
         advance_aru();
     }
 }
@@ -58,18 +61,27 @@ void executed_client_update(Client_Update *u)
     if (u->server_id == MY_SERVER_ID)
     {
         // XXX Reply to client
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Executed client update %d\n", u->client_id);
+
         if (PENDING_UPDATES[u->client_id] != 0)
         {
             // cancel update timer(client_id)
-            // ??? should update timer be an array of timers
+            // we can just used -1 to designate it as some impossible time when we have to
+            // then go and check for progress
+            UPDATE_TIMER[u->client_id] = -1;
+
             PENDING_UPDATES[u->client_id] = 0;
         }
     }
+    // time(NULL) returns time_t object, struct timeval uses time_t to
+    // represent tv_sec so just use this in the timer to store seconds
     LAST_EXECUTED[u->client_id] = (unsigned)time(NULL);
+
     if (STATE != LEADER_ELECTION)
     {
-        // XXX restart progress timer
+        // restart progress timer
         gettimeofday(&PROGRESS_TIMER, NULL);
+        PROGRESS_TIMER_SET = true;
     }
     if (STATE == REG_LEADER)
     {
@@ -80,37 +92,42 @@ void executed_client_update(Client_Update *u)
 void send_proposal()
 {
     int seq = LAST_PROPOSED+1;
-    if (GLOBAL_HISTORY[seq]->global_ordered_update != NULL)
+    if (GLOBAL_HISTORY[seq]->global_ordered_update != 0)
     {
         LAST_PROPOSED++;
         send_proposal();
     }
 
-    if (GLOBAL_HISTORY[seq]->proposal != NULL)
+    if (GLOBAL_HISTORY[seq]->proposal != 0)
     {
         Client_Update *u = GLOBAL_HISTORY[seq]->proposal->update;
-    } else if (UPDATE_QUEUE[0] == NULL)
+    } 
+    else if (list_length(UPDATE_QUEUE) == 0)
     {
         return;
-    } else
+    } 
+    else
     {
-        Client_Update *u = UPDATE_QUEUE[0];
-        UPDATE_QUEUE += 4;
+        Client_Update *u = pop_from_queue(UPDATE_QUEUE);
     }
     
     Proposal *p = malloc(sizeof(Proposal));
     p->server_id = MY_SERVER_ID;
-    p->view = LAST_INSTALLED;
+    p->view = LAST_INSTALLED;           // XXX check that this is the right one
     p->seq = seq;
     p->update = u;
-    unsigned char *prop_buf = malloc(sizeof(Proposal));
+    
+    // size of proposal is uint32_t * 3 + storage for client update
+    // client update is uin32_t * 4
+    unsigned char *prop_buf = malloc(sizeof(uint32_t) * 7);
     pack_proposal(p, prop_buf);
+
     // XXX SYNC TO DISK
 
     Header *head = malloc(sizeof(Header));
     head->msg_type = Proposal_Type;
-    // server_id + view + seq + Client_Update
-    head->size = (sizeof(uint32_t)*3) + sizeof(Client_Update) - ;
+    // server_id + view + seq + Client_Update (4*uint32_T)
+    head->size = (sizeof(uint32_t) * 7);
     unsigned char *head_buf = malloc(sizeof(Header));
     pack_header(head, head_buf);
     
@@ -144,13 +161,12 @@ void advance_aru()
     int i = LOCAL_ARU+1;
     while (1)
     {
-        if (GLOBAL_HISTORY[i]->global_ordered_update != 0)
+        if (GLOBAL_HISTORY[i]->global_ordered_update != NULL)
         {
             LOCAL_ARU++;
             i++;
-        } else
-        {
+        } 
+        else
             return;
-        }
     }
 }

@@ -70,3 +70,6 @@ uint32_t *LAST_ENQUEUED[];              // array of timestamps, indexed by clien
 Client_Update *PENDING_UPDATES[];       // array of Client_Update messages, indexed by client_id
                                         // dynamic size
 
+// TODO when initializing node_t objects (really all of the structs)
+// need to explicitly set the pointers to null and make sure that all the code
+// expects those to be null not zero

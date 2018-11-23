@@ -18,7 +18,7 @@ int list_length(node_t *list)
 
 int append_to_list(void *new_data, node_t *list, int data_type)
 {
-    if (list->data_type == 0)
+    if (list->data == NULL)
     {
         list->data = new_data;
         list->next = NULL;

@@ -14,6 +14,8 @@ extern struct timeval PROGRESS_TIMER;
 extern Client_Update *UPDATE_QUEUE[];
 extern int NUM_PEERS;
 extern int LOCAL_ARU;
+extern int LOG_LEVEL;
+extern bool PROGRESS_TIMER_SET;
 
 void received_proposal(Proposal *p);
 void received_accept(Accept *acc);
