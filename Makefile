@@ -1,7 +1,9 @@
-all: prj2
+src = $(wildcard src/*.c)
 
-prj2: src/main.c src/serialize.c src/logging.c src/failure.c
-	gcc -Wall -g -o prj2 src/main.c src/serialize.c src/logging.c src/failure.c
+all: paxos
+
+paxos: $(src)
+	gcc -Wall -g -o paxos $(src)
 
 clean:
-	$(RM) prj2
+	$(RM) paxos

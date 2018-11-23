@@ -10,15 +10,15 @@ WORKDIR /home
 
 # Expose out default ports for testing
 EXPOSE 55555
-EXPOSE 44444
+# EXPOSE 44444
 
 # Update the system, download any packages essential for the project
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y git build-essential make gcc vim net-tools iputils-ping
 
 # Download and build application code
-RUN git clone https://github.com/Fauer4Effect/project2
-WORKDIR /home/project2
+RUN git clone https://github.com/Fauer4Effect/paxos
+WORKDIR /home/paxos
 RUN make
 
 # Import any additional files into the environment (from the host)
