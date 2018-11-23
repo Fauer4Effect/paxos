@@ -43,10 +43,10 @@ void received_accept(Accept *acc)
 
     if (globally_ordered_ready(acc->seq))
     {
-        // ??? What happens to the global->update, is this just blank?
         Globally_Ordered_Update *global = malloc(sizeof(Globally_Ordered_Update));
         global->server_id = MY_SERVER_ID;
         global->seq = acc->seq;
+        Client_Update *update = GLOBAL_HISTORY[acc->seq]->proposal->update;
         
         // apply globally ordered
         apply_globally_ordered_update(global);

@@ -70,6 +70,21 @@ void *pop_from_queue(node_t *q)
     return data;
 }
 
+node_t *get_index(node_t *list, int index)
+{
+    node_t *tmp_list = list;
+    while (tmp_list->next != NULL)
+    {
+        if (index == 0)
+        {
+            return tmp_list;
+        }
+        tmp_list = tmp_list->next;
+        index--;
+    }
+    return NULL;
+}
+
 // Amortize resizing of array by increasing size of array by 2
 uint32_t *increase_array_size(uint32_t *old_array)
 {

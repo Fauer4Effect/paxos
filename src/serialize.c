@@ -237,7 +237,8 @@ void pack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
     buf += 4;
     packi32(buf, msg->seq);
     buf += 4;
-    packi32(buf, msg->update);
+    
+    pack_client_update(msg->update, buf);
 }
 
 void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
@@ -246,5 +247,8 @@ void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
     buf += 4;
     msg->seq = unpacki32(buf);
     buf += 4;
-    msg->update = unpacki32(buf);
+    
+    Cleint_Update *update = malloc(sizeof(Client_Update));
+    unpack_client_update(update, buf);
+    msg->update = update;
 }

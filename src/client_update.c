@@ -19,8 +19,24 @@ void client_update_handler(Client_Update *u)
         if (u->server_id == MY_SERVER_ID)
         {
             add_to_pending_updates(u);
-            // XXX send to leader, u
+            
+            // send to leader, u
+            unsigned char *update_buf = malloc(sizeof(Client_Update));
+            pack_client_update(u, update_buf);
 
+            Header *head = malloc(sizeof(Header));
+            head->msg_type = Client_Update_Type;
+            head->size = sizeof(Client_Update));
+            unsigned char *head_buf = malloc(sizeof(Header));
+            pack_header(head, head_buf);
+
+            int leader_id = u->view % NUM_PEERS;
+
+            send_to_single_host(head_buf, sizeof(Header), update_buf, head->size, leader_id);
+
+            free(head_buf);
+            free(head);
+            free(update_buf);
         }
     }
     if (STATE == REG_LEADER)
@@ -36,9 +52,27 @@ void client_update_handler(Client_Update *u)
 
 void update_timer_expired(int client_id)
 {
-    // XXX restart update timer (client id)
+    // restart update timer (client id)
+    UPDATE_TIMER[client_id] = (unsigned)time(NULL);
     if (STATE == REG_NONLEADER)
-        // XXX Send to leader pending_updates[client_id]
+        // Send to leader pending_updates[client_id]
+        Client_Update *pending = PENDING_UPDATES[client_id];
+        unsigned char *pending_buf = malloc(sizeof(Client_Update));
+        pack_client_update(pending, pending_buf);
+
+        Header *head = malloc(sizeof(Header));
+        head->msg_type = Client_Update_Type;
+        head->size = sizeof(Client_Update);
+        unsigned char *head_buf = malloc(sizeof(Header));
+        pack_header(head, head_buf);
+
+        int leader_id = pending->view % NUM_PEERS;
+
+        send_to_single_host(head_buf, sizeof(Header), pending_buf, head->size, leader_id);
+
+        free(head_buf);
+        free(head);
+        free(pending_buf);
 }
 
 bool enqueue_update(Client_Update *u)
@@ -47,7 +81,10 @@ bool enqueue_update(Client_Update *u)
         return false;
     if (u->timestamp <= LAST_ENQUEUED[u->client_id])
         return false;
-    // XXX add u to the update queue
+
+    // add u to the update queue
+    append_to_list(u, UPDATE_QUEUE, Client_Update_Type);
+
     LAST_ENQUEUED[u->client_id] = u->timestamp;
     return true;
 }
@@ -55,18 +92,38 @@ bool enqueue_update(Client_Update *u)
 void add_to_pending_updates(Client_Update *u)
 {
     PENDING_UPDATES[u->client_id] = u;
-    // XXX Set update timer(u->client id)
+    // Set update timer(u->client id)
+    UPDATE_TIMER[client_id] = (unsigned)time(NULL);
+
     // XXX SYNC to disk
 }
 
-// TODO Code this
+// FIXME need to know what a bound update is
 void enqueue_unbound_pending_updates()
 {
-
+    Client_Update *u;
+    int i;
+    for (i = 0; i < MAX_CLIENT_ID; i++)
+    {
+        u = PENDING_UPDATES[i];
+        // XXX If U is not bound and U is not in Update_Queue
+        //if()
+        //  enqueue_update(u);
+    }
 }
 
-// TODO Code this
+// FIXME how to tell when something is bound
 void remove_bound_updates_from_queue()
 {
-
+    Client_update *u;
+    int i;
+    for (i = 0; i < list_length(UPDATE_QUEUE); i++)
+    {
+        u = get_index(UPDATE_QUEUE, i);
+        // XXX if U is bound or u->timestamp <= LAST_EXECUTED[u->client_id] or
+        // (if u->timestamp <= LAST_ENQUEUED[u->client_id] and u->server_id != MY_SERVER_ID)
+        //  remove u from update_queue
+        //  if (u->timestanp > Last_Enqueued[u->client_id])
+        //      last_enqueue[u->client_id] = u->timestamp;
+    }
 }
