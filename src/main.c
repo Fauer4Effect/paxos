@@ -28,6 +28,9 @@
 int MAX_CLIENT_ID  = 32;                // size of arrays that are indexed by client id
                                         // updated by increase_array_size()
 
+// TODO Need to have a data structure probably so that you can tell when a client update
+// has been bound to a specific sequence number
+
 // server state variables   
 int MY_SERVER_ID;                       // unique identifier for this server
 int NUM_PEERS;                          // how many peers in the protocol
@@ -315,7 +318,78 @@ int main(int argc, char *argv[])
                 unpack_header(header, recvd_header);
 
                 switch(header->msg_type){
-                    
+                    // received client update
+                    // ??? I'm pretty sure this is the level of interaction where the third party
+                    // application ends up interacting with the paxos service
+                    case Client_Update_Type:
+                        unsigned char *recvd_update = malloc(header->size);
+                        Client_Update *update = malloc(sizeof(Client_Update));
+
+                        if ((nbytes = recvfrom(listener, recvd_update, header->size, 0, 
+                                (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                        {
+                            logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                                    nbytes, header->size);
+                            exit(1);
+                        }
+                        unpack_client_update(update, recvd_update);
+
+                        // ??? No conflict check for client updates?
+
+                        client_update_handler(update);
+
+                        break;
+
+                    // received view change
+                    case View_Change_Type:
+                        unsigned char *recvd_vc = malloc(header->size);
+                        View_Change *v = malloc(sizeof(View_Change));
+
+                        if ((nbytes = recvfrom(listener, recvd_vd, header->size, 0,
+                                (struct sockaddr*)&their_addr, &addrlen)) != header->size)
+                        {
+                           logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                                    nbytes, header->size); 
+                        }
+                        unpack_view_change(v, recvd_vc);
+
+                        // conflict checks return true if there is a conflict
+                        if (check_view_change(v))
+                            break;
+
+                        received_view_change(v);
+
+                        break;
+
+                    // received vc proof
+                    case VC_Proof_Type:
+
+                        break;
+
+                    // received prepare
+                    case Prepare_Type:
+
+                        break;
+
+                    // received prepare ok
+                    case Prepare_OK_Type:
+
+                        break;
+
+                    // received proposal
+                    case Proposal_Type:
+
+                        break;
+
+                    // received accept
+                    case Accept_Type:
+
+                        break;
+
+                    // received globally ordered update
+                    case Globally_Ordered_Update_Type:
+
+                        break;
                 }
 
 
