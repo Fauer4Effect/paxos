@@ -63,16 +63,54 @@ uint32_t *UPDATE_TIMER[];               // array of timeouts, indexed by client 
 
 // client handling variables
 node_t *UPDATE_QUEUE;                   // queue of Client_Update messages
-uint32_t *LAST_EXECUTED[];              // array of timestamps, indexed by client_id
-uint32_t *LAST_ENQUEUED[];              // array of timestamps, indexed by client_id
+uint32_t *LAST_EXECUTED;                // array of timestamps, indexed by client_id
+uint32_t *LAST_ENQUEUED;                // array of timestamps, indexed by client_id
                                         // stores tv_sec field in struct timeval
                                         // dynamic size
 Client_Update *PENDING_UPDATES[];       // array of Client_Update messages, indexed by client_id
                                         // dynamic size
 
-// TODO when initializing node_t objects (really all of the structs)
+// when initializing node_t objects (really all of the structs)
 // need to explicitly set the pointers to null and make sure that all the code
 // expects those to be null not zero
+void initialize_globals()
+{
+    STATE = LEADER_ELECTION;        // when we start we probably want to elect a leader
+    LAST_ATTEMPTED = 0;
+    LAST_INSTALLED = 0;
+
+    VC = malloc(sizeof(View_Change *) * NUM_PEERS);
+    memset(VC, 0, sizeof(View_Change *) * NUM_PEERS);
+    
+    PREPARED = NULL;
+
+    PREPARE_OKS = malloc(sizeof(Prepare_OK *) * NUM_PEERS);
+    memset(PREPARE_OKS, 0, sizeof(Prepare_OK *) * NUM_PEERS);
+
+    LOCAL_ARU = 0;
+    LAST_PROPOSED = 0;
+    
+    GLOBAL_HISTORY = malloc(sizeof(Global_Slot *) * MAX_CLIENT_ID);
+    memset(GLOBAL_HISTORY, 0, sizeof(Global_Slot *) * MAX_CLIENT_ID);
+
+    PROGRESS_TIMER_SET = false;
+    PROGRESS_TIMEOUT = 2;           // how about setting to 2 sec for first timeout
+
+    UPDATE_TIMER = malloc(sizeof(uint32_t) * MAX_CLIENT_ID);
+    memset(UPDATE_TIMER, 0, sizeof(uint32_t) * MAX_CLIENT_ID);
+
+    UPDATE_QUEUE = malloc(sizeof(node_t));
+    UPDATE_QUEUE->data = NULL;
+    UPDATE_QUEUE->next = NULL;
+    UPDATE_QUEUE->data_type = 0;
+
+    LAST_EXECUTED = malloc(sizeof(uint32_t) * MAX_CLIENT_ID);
+    memset(LAST_EXECUTED, 0, sizeof(uint32_t) * MAX_CLIENT_ID);
+    LAST_ENQUEUED = malloc(sizeof(uint32_t) * MAX_CLIENT_ID);
+    memset(LAST_ENQUEUED, 0, sizeof(uint32_t) * MAX_CLIENT_ID);
+    PENDING_UPDATES = malloc(sizeof(Client_Update *) * MAX_CLIENT_ID);
+    memset(PENDING_UPDATES, 0, sizeof(Client_Update *) * MAX_CLIENT_ID);
+}
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -88,20 +126,20 @@ char **open_parse_hostfile(char *hostfile)
 {
     char hostname[64];
     int cur_hostname = gethostname(hostname, 63);
-    logger(0, LOG_LEVEL, PROCESS_ID, "Got hostname: %s\n", hostname);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Got hostname: %s\n", hostname);
     if (cur_hostname == -1)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "Could not get hostname\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Could not get hostname\n");
         exit(1);
     }
 
     FILE *fp = fopen(hostfile, "r");
     if (fp == NULL)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "Could not open hostfile\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Could not open hostfile\n");
         exit(1);
     }
-    logger(0, LOG_LEVEL, PROCESS_ID, "Opened hostfile\n");
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Opened hostfile\n");
 
     // get number of lines in hostfile
     int numLines = 0;
@@ -113,38 +151,38 @@ char **open_parse_hostfile(char *hostfile)
             numLines ++;
         chr = getc(fp);
     }
-    logger(0, LOG_LEVEL, PROCESS_ID, "Hostfile is %d lines\n", numLines);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Hostfile is %d lines\n", numLines);
     fseek(fp, 0, SEEK_SET);     // reset to beginning
 
     // malloc 2-D array of hostnames
     char **hosts = malloc(numLines * sizeof(char *));
     // keep track of size of host file
-    NUM_HOSTS = numLines;
+    NUM_PEERS = numLines;
     if (hosts == NULL)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "Could not malloc hosts array\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Could not malloc hosts array\n");
         exit(1);
     }
 
     // read in all the host names
     int i = 0;
-    for(i = 0; i < NUM_HOSTS; i++)
+    for(i = 0; i < NUM_PEERS; i++)
     {
         hosts[i] = (char *)malloc(255);
         if (hosts[i] == NULL)
         {
-            logger(1, LOG_LEVEL, PROCESS_ID, "Error on malloc");
+            logger(1, LOG_LEVEL, MY_SERVER_ID, "Error on malloc");
             exit(1);
         }
         fgets(hosts[i], 255, fp);
         char *newline_pos;
         if ((newline_pos=strchr(hosts[i], '\n')) != NULL)
             *newline_pos = '\0';
-        logger(0, LOG_LEVEL, PROCESS_ID, "Host %s read in\n", hosts[i]);
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "Host %s read in\n", hosts[i]);
         if ((strcmp(hosts[i], hostname)) == 0)
         {
-            PROCESS_ID = i+1;
-            logger(0, LOG_LEVEL, PROCESS_ID, "Process id: %d\n", PROCESS_ID);
+            MY_SERVER_ID = i+1;
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "Process id: %d\n", MY_SERVER_ID);
         }
     }
 
@@ -155,7 +193,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 5)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "USAGE:\n paxos -p port -h hostfile\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "USAGE:\n paxos -p port -h hostfile\n");
         exit(1);
     }
 
@@ -165,7 +203,7 @@ int main(int argc, char *argv[])
     }
     if (atoi(PORT) < 10000 || atoi(PORT) > 65535)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "Port number out of range 10000 - 65535\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Port number out of range 10000 - 65535\n");
         exit(1);
     }
     if (strcmp(argv[3], "-h") == 0)
@@ -173,7 +211,7 @@ int main(int argc, char *argv[])
         PEERS = open_parse_hostfile(argv[4]);
     }
 
-    logger(0, LOG_LEVEl, PROCESS_ID, "Command line parsed\n");
+    logger(0, LOG_LEVEl, MY_SERVER_ID, "Command line parsed\n");
 
     // networking schtuff
     fd_set master;                          // master file descriptor list
@@ -181,8 +219,8 @@ int main(int argc, char *argv[])
     int fdmax;                              // maximum file descriptor num
 
     int listener;                           // listening socket descriptor
-    int newfd;                              // newly accept()ed socket descriptor
-    struct sockaddr_storage remoteaddr;     // client address
+    // int newfd;                              // newly accept()ed socket descriptor
+    struct sockaddr_storage their_addr;     // client address
     socklen_t addrlen;    
 
     int nbytes;
@@ -203,7 +241,7 @@ int main(int argc, char *argv[])
     hints.ai_flags = AI_PASSIVE;
     if ((rv = getaddrinfo(NULL, PORT, &hints, &ai)) != 0)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "selectserver: %s\n", gai_strerror(rv));
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "selectserver: %s\n", gai_strerror(rv));
         exit(1);
     }
     
@@ -228,14 +266,14 @@ int main(int argc, char *argv[])
 
     if (p == NULL)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "selectserver: failed to bind\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "selectserver: failed to bind\n");
         exit(1);
     }
     freeaddrinfo(ai);
 
     if (listen(listener, 10) == -1)
     {
-        logger(1, LOG_LEVEL, PROCESS_ID, "listen fail\n");
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "listen fail\n");
         exit(1);
     }
 
@@ -243,5 +281,48 @@ int main(int argc, char *argv[])
     FD_SET(listener, &master);
     fdmax = listener;
 
-    logger(0, LOG_LEVEL, PROCESS_ID, "Networking setup complete\n");
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Networking setup complete\n");
+
+    initialize_globals();
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Globals initialized\n");
+
+    for (;;)
+    {
+        read_fds = master;              // copy fd set
+        select_timeout.tv_sec = 0;
+        select_timeout.tv_usec = 500000;
+
+        if (select(fdmax+1, &read_fds, NULL, NULL, &select_timeout) == -1)
+        {
+            logger(1, LOG_LEVEL, MY_SERVER_ID, "Failed on select\n");
+            exit(1);
+        }
+
+        for (i = 0; i <= fdmax; i++)
+        {
+            // something to read on this socket
+            if (FD_ISSET(i, &read_fds))
+            {
+                unsigned char *recvd_header = malloc(sizeof(Header));
+                Header *header = malloc(sizeof(Header));
+                
+                if ((nbytes = recvfrom(listener, recvd_header, sizeof(Header), 0, 
+                        (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Receive length\n");
+                    exit(1);
+                }
+                unpack_header(header, recvd_header);
+
+                switch(header->msg_type){
+                    
+                }
+
+
+                free(recvd_head);
+                free(header);
+
+            }
+        }
+    }
 }
