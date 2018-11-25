@@ -21,3 +21,4 @@ extern int LAST_INSTALLED;
 bool preinstall_ready(int view);
 void shift_to_leader_election(int view);
 void received_view_change(View_Change *v);
+void received_vc_proof(VC_Proof *v);
