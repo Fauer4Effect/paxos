@@ -50,6 +50,9 @@ void received_accept(Accept *acc)
 
         // apply globally ordered
         apply_globally_ordered_update(global);
+        // ??? Does this mean that when we have applied the update that we have 'executed'
+        // that update?
+        executed_client_update(update);
 
         advance_aru();
     }

@@ -55,24 +55,26 @@ void update_timer_expired(int client_id)
     // restart update timer (client id)
     UPDATE_TIMER[client_id] = (unsigned)time(NULL);
     if (STATE == REG_NONLEADER)
+    {
         // Send to leader pending_updates[client_id]
         Client_Update *pending = PENDING_UPDATES[client_id];
-    unsigned char *pending_buf = malloc(sizeof(Client_Update));
-    pack_client_update(pending, pending_buf);
+        unsigned char *pending_buf = malloc(sizeof(Client_Update));
+        pack_client_update(pending, pending_buf);
 
-    Header *head = malloc(sizeof(Header));
-    head->msg_type = Client_Update_Type;
-    head->size = sizeof(Client_Update);
-    unsigned char *head_buf = malloc(sizeof(Header));
-    pack_header(head, head_buf);
+        Header *head = malloc(sizeof(Header));
+        head->msg_type = Client_Update_Type;
+        head->size = sizeof(Client_Update);
+        unsigned char *head_buf = malloc(sizeof(Header));
+        pack_header(head, head_buf);
 
-    int leader_id = pending->view % NUM_PEERS;
+        int leader_id = pending->view % NUM_PEERS;
 
-    send_to_single_host(head_buf, sizeof(Header), pending_buf, head->size, leader_id);
+        send_to_single_host(head_buf, sizeof(Header), pending_buf, head->size, leader_id);
 
-    free(head_buf);
-    free(head);
-    free(pending_buf);
+        free(head_buf);
+        free(head);
+        free(pending_buf);
+    }
 }
 
 bool enqueue_update(Client_Update *u)

@@ -63,6 +63,7 @@ bool PROGRESS_TIMER_SET;       // keep track of whether the progress time was se
 uint32_t PROGRESS_TIMEOUT;     // how long to wait until PROGRESS_TIMER is timed out
 uint32_t *UPDATE_TIMER[];      // array of timeouts, indexed by client id
                                // dynamic size by increase_array_size()
+uint32_t UPDATE_TIMEOUT;       // how long to wait until UPDATE_TIMER is timed out
 
 // client handling variables
 node_t *UPDATE_QUEUE;             // queue of Client_Update messages
@@ -98,6 +99,7 @@ void initialize_globals()
 
     PROGRESS_TIMER_SET = false;
     PROGRESS_TIMEOUT = 2; // how about setting to 2 sec for first timeout
+    UPDATE_TIMEOUT = 2;
 
     UPDATE_TIMER = malloc(sizeof(uint32_t) * MAX_CLIENT_ID);
     memset(UPDATE_TIMER, 0, sizeof(uint32_t) * MAX_CLIENT_ID);
@@ -288,8 +290,37 @@ int main(int argc, char *argv[])
     initialize_globals();
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Globals initialized\n");
 
+    struct timeval cur_time;    // for checking if timers have expired
+
     for (;;)
     {
+
+        // if Progress timer has expired
+        if (PROGRESS_TIMER_SET)
+        {
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking progress timer\n");
+            gettimeofday(&cur_time, NULL);
+            if ((cur_time.tv_sec - PROGRESS_TIMER.tv_sec) > PROGRESS_TIMEOUT)
+            {
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Progress timer expired\n");
+                shift_to_leader_election(LAST_ATTEMPTED + 1);
+            }
+        }
+
+        // check is update timers have expired
+        // ??? Is there somewhere else this could be happening?
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking update timers\n");
+        int j;
+        for (j = 0; j < MAX_CLIENT_ID; j++)
+        {
+            gettimeofday(&cur_time, NULL);
+            if ((cut_time.tv_sec - UPDATE_TIMER[j]->tv_sec) > UPDATE_TIMEOUT)
+            {
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Update timer for %d expired\n", j);
+                update_timer_expired(j);
+            }
+        }
+
         read_fds = master; // copy fd set
         select_timeout.tv_sec = 0;
         select_timeout.tv_usec = 500000;
@@ -531,7 +562,7 @@ int main(int argc, char *argv[])
 
                     // ??? No conflict check for globally ordered update?
 
-                    // ??? What happens when you actually receive one of these?
+                    apply_globally_ordered_update(update);
                     free(recvd_update);
 
                     break;
