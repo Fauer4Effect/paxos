@@ -233,7 +233,6 @@ int main(int argc, char *argv[])
 
     struct addrinfo hints, *ai, *p;
 
-
     FD_ZERO(&master);                       // clear master and temp sets
     FD_ZERO(&read_fds);
 

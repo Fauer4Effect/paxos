@@ -1,3 +1,4 @@
+#include <stdint.h>
 
 extern int NUM_PEERS;
 extern char *PEERS[];
