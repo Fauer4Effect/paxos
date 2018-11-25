@@ -355,6 +355,7 @@ int main(int argc, char *argv[])
                         {
                            logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
                                     nbytes, header->size); 
+                            exit(1);
                         }
                         unpack_view_change(v, recvd_vc);
 
@@ -383,6 +384,7 @@ int main(int argc, char *argv[])
                         {
                             logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
                                     nbytes, header->size);
+                            exit(1);
                         }
                         unpack_vc_proof(proof, recvd_proof);
 
@@ -411,6 +413,7 @@ int main(int argc, char *argv[])
                         {
                             logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
                                     nbytes, header->size);
+                            exit(1);
                         }
                         unpack_prepare(prep, recvd_prep);
 
@@ -438,6 +441,7 @@ int main(int argc, char *argv[])
                         {
                             logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
                                     nbytes, header->size);
+                            exit(1);
                         }
                         unpack_prepare_ok(ok, recvd_ok);
 
@@ -455,16 +459,80 @@ int main(int argc, char *argv[])
 
                     // received proposal
                     case Proposal_Type:
+                        logger(0, LOG_LEVEL, MY_SERVER_ID, "Received proposal\n");
+
+                        unsigned char *recvd_prop = malloc(header->size);
+                        Proposal *prop = malloc(sizeof(Proposal));
+
+                        if ((nbytes = recvfrom(listener, recvd_prop, header->size, 0, 
+                                (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                        {
+                            logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                                    nbytes, header->size);
+                            exit(1);
+                        }
+                        unpack_proposal(prop, recvd_prop);
+
+                        if (check_proposal(prop))
+                        {
+                            logger(0, LOG_LEVEL, MY_SERVER_ID,
+                                    "Received proposal has conflicts\n");
+                            break;
+                        }
+
+                        received_proposal(prop);
+                        free(recvd_prop);
 
                         break;
 
                     // received accept
                     case Accept_Type:
+                        logger(0, LOG_LEVEL, MY_SERVER_ID, "Received accept\n");
+
+                        unsigned char *recvd_acc = malloc(header->size);
+                        Accept *acc = malloc(sizeof(Accept));
+
+                        if ((nbytes = recvfrom(listener, recvd_acc, header->size, 0,
+                                (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                        {
+                            logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                                    nbytes, header->size);
+                            exit(1);
+                        }
+                        unpack_accept(acc, recvd_acc);
+
+                        if (check_accept(acc))
+                        {
+                            logger(0, LOG_LEVEL, MY_SERVER_ID,
+                                    "Received accept has conflicts\n");
+                            break;
+                        }
+
+                        recevied_accept(acc);
+                        free(recvd_acc);
 
                         break;
 
                     // received globally ordered update
                     case Globally_Ordered_Update_Type:
+                        logger(0, LOG_LEVEL, MY_SERVER_ID, "Received globally ordered update\n");
+
+                        unsigned char *recvd_update = malloc(header->size);
+                        GLobally_Ordered_Update *update = malloc(sizeof(GLobally_Ordered_Update));
+
+                        if ((nbytes = recvfrom(listener, recvd_update, header->size, 0,
+                                (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                        {
+                            logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                                    nbytes, header->size);
+                            exit(1);
+                        }
+                        unpack_global_ordered(update, recvd_update);
+
+                        // ??? No conflict check for globally ordered update?
+
+                        // ??? What happens when you actually receive one of these?
+                        free(recvd_update);
 
                         break;
                 }
