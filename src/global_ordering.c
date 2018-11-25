@@ -47,7 +47,7 @@ void received_accept(Accept *acc)
         global->server_id = MY_SERVER_ID;
         global->seq = acc->seq;
         Client_Update *update = GLOBAL_HISTORY[acc->seq]->proposal->update;
-        
+
         // apply globally ordered
         apply_globally_ordered_update(global);
 
@@ -91,7 +91,7 @@ void executed_client_update(Client_Update *u)
 
 void send_proposal()
 {
-    int seq = LAST_PROPOSED+1;
+    int seq = LAST_PROPOSED + 1;
     if (GLOBAL_HISTORY[seq]->global_ordered_update != 0)
     {
         LAST_PROPOSED++;
@@ -101,22 +101,22 @@ void send_proposal()
     if (GLOBAL_HISTORY[seq]->proposal != 0)
     {
         Client_Update *u = GLOBAL_HISTORY[seq]->proposal->update;
-    } 
+    }
     else if (list_length(UPDATE_QUEUE) == 0)
     {
         return;
-    } 
+    }
     else
     {
         Client_Update *u = pop_from_queue(UPDATE_QUEUE);
     }
-    
+
     Proposal *p = malloc(sizeof(Proposal));
     p->server_id = MY_SERVER_ID;
-    p->view = LAST_INSTALLED;           // XXX check that this is the right one
+    p->view = LAST_INSTALLED; // XXX check that this is the right one
     p->seq = seq;
     p->update = u;
-    
+
     // size of proposal is uint32_t * 3 + storage for client update
     // client update is uin32_t * 4
     unsigned char *prop_buf = malloc(sizeof(uint32_t) * 7);
@@ -130,7 +130,7 @@ void send_proposal()
     head->size = (sizeof(uint32_t) * 7);
     unsigned char *head_buf = malloc(sizeof(Header));
     pack_header(head, head_buf);
-    
+
     multicast(head_buf, sizeof(Header), prop_buf, head->size);
     free(head_buf);
     free(head);
@@ -151,21 +151,21 @@ bool globally_ordered_ready(int seq)
         if (accepts[i] != 0)
             count++;
     }
-    if (count >= (NUM_PEERS/2))
+    if (count >= (NUM_PEERS / 2))
         return true;
     return false;
 }
 
 void advance_aru()
 {
-    int i = LOCAL_ARU+1;
+    int i = LOCAL_ARU + 1;
     while (1)
     {
         if (GLOBAL_HISTORY[i]->global_ordered_update != NULL)
         {
             LOCAL_ARU++;
             i++;
-        } 
+        }
         else
             return;
     }

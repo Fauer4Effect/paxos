@@ -13,7 +13,7 @@ bool preinstall_ready(int view)
         if (VC[i]->attempted == view)
             count++;
     }
-    if (count >= ((NUM_PEERS/2)+1))
+    if (count >= ((NUM_PEERS / 2) + 1))
         return true;
     return false;
 }
@@ -100,7 +100,8 @@ void received_vc_proof(VC_Proof *v)
         if ((LAST_ATTEMPTED % NUM_PEERS) == MY_SERVER_ID)
         {
             shift_to_prepare_phase();
-        } else
+        }
+        else
         {
             shift_to_reg_non_leader();
         }

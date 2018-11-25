@@ -36,16 +36,18 @@ node_t *construct_datalist(int aru)
 {
     node_t *datalist = malloc(sizeof(node_t));
     int i;
-    for (i = aru+1; i < MAX_CLIENT_ID; i++)
+    for (i = aru + 1; i < MAX_CLIENT_ID; i++)
     {
-        if (GLOBAL_HISTORY[i] == 0){
+        if (GLOBAL_HISTORY[i] == 0)
+        {
             continue;
         }
         if (GLOBAL_HISTORY[i]->global_ordered_update != 0)
         {
-            append_to_list(GLOBAL_HISTORY[i]->global_ordered_update, datalist, 
-                            Globally_Ordered_Update_Type);
-        } else
+            append_to_list(GLOBAL_HISTORY[i]->global_ordered_update, datalist,
+                           Globally_Ordered_Update_Type);
+        }
+        else
         {
             append_to_list(GLOBAL_HISTORY[i]->proposal, datalist, Proposal_Type);
         }
@@ -62,7 +64,7 @@ bool view_prepared_ready(int view)
         if (PREPARE_OKS[i]->view == view)
             count++;
     }
-    if (count >= ((NUM_PEERS/2)+1))
+    if (count >= ((NUM_PEERS / 2) + 1))
         return true;
     return false;
 }
@@ -127,9 +129,10 @@ void received_prepare(Prepare *prepare)
         prepare_ok->size = list_length(datalist);
         prepare_ok->data_list = datalist;
         PREPARE_OKS[MY_SERVER_ID] = prepare_ok;
-        
+
         shift_to_reg_non_leader();
-    } else
+    }
+    else
     {
         // already installed the view
         prepare_ok = PREPARE_OKS[MY_SERVER_ID];

@@ -121,8 +121,8 @@ void apply_proposal(Proposal *msg)
                 GLOBAL_HISTORY[msg->seq]->accepts[i] = 0;
             }
         }
-    } 
-    else 
+    }
+    else
     {
         GLOBAL_HISTORY[msg->seq]->proposal = msg;
     }
@@ -140,7 +140,7 @@ void apply_accept(Accept *msg)
         if (GLOBAL_HISTORY[msg->seq]->accepts[i] != 0)
             num_accepts++;
     }
-    
+
     if (num_accepts >= (NUM_PEERS / 2))
         return;
     if (GLOBAL_HISTORY[msg->seq]->accepts[msg->server_id] != 0)

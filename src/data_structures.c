@@ -6,7 +6,7 @@ int list_length(node_t *list)
 {
     if (list->data == NULL)
         return 0;
-    
+
     int length = 1;
     while (list->next != NULL)
     {
@@ -62,11 +62,12 @@ void *pop_from_queue(node_t *q)
     if (q->next != NULL)
     {
         q = q->next;
-    } else
+    }
+    else
     {
         q->data = NULL;
     }
-    
+
     return data;
 }
 

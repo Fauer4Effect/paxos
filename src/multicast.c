@@ -7,8 +7,8 @@
 
 // Not reliable but paxos assumption doesn't require it
 // Messages may be lost, reordered, or duplicated.
-void multicast(unsigned char *header_buf, uint32_t header_size, 
-                unsigned char *msg_buf, uint32_t msg_size)
+void multicast(unsigned char *header_buf, uint32_t header_size,
+               unsigned char *msg_buf, uint32_t msg_size)
 {
     int i;
     for (i = 0; i < NUM_PEERS; i++)
@@ -18,7 +18,7 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
         int rv;
         int numbytes;
 
-        memset(&hints,0, sizeof(hints));
+        memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
         hints.ai_socktype = SOCK_DGRAM;
 
@@ -49,14 +49,14 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
 }
 
 void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
-                        unsigned char *msg_buf, uint32_t msg_size, uint32_t server_id)
+                         unsigned char *msg_buf, uint32_t msg_size, uint32_t server_id)
 {
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
     int numbytes;
 
-    memset(&hints,0, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
 
@@ -82,5 +82,5 @@ void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
 
     freeaddrinfo(servinfo);
     close(sockfd);
-    logger(0, LOG_LEVEL, MY_SERVER_ID, "Sent message to server %d\n", server_id);    
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Sent message to server %d\n", server_id);
 }

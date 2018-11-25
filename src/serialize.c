@@ -10,7 +10,7 @@ Pack an integer into the buffer
 */
 void packi32(unsigned char *buf, uint32_t i)
 {
-    *buf++ = i >> 24; 
+    *buf++ = i >> 24;
     *buf++ = i >> 16;
     *buf++ = i >> 8;
     *buf++ = i;
@@ -21,9 +21,9 @@ Unpack an integer from the buffer
 */
 uint32_t unpacki32(unsigned char *buf)
 {
-    uint32_t i = ((uint32_t) buf[0]<<24) |
-                 ((uint32_t) buf[1]<<16) |
-                 ((uint32_t) buf[2]<<8)  |
+    uint32_t i = ((uint32_t)buf[0] << 24) |
+                 ((uint32_t)buf[1] << 16) |
+                 ((uint32_t)buf[2] << 8) |
                  buf[3];
     return i;
 }
@@ -116,7 +116,7 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
     packi32(buf, msg->view);
     buf += 4;
-    
+
     int datalist_size = list_length(msg->datalist);
     packi32(buf, datalist_size);
     buf += 4;
@@ -130,18 +130,17 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     {
         // each node has void *data, node *next, uint32_t data_type
         packi32(buf, datalist->data_type);
-        buf += 4
-        if (datalist->data_type == Globally_Ordered_Update_Type)
+        buf += 4 if (datalist->data_type == Globally_Ordered_Update_Type)
         {
             pack_global_ordered(datalist->data, buf);
-            buf += 4;               // carry over from pack_global_ordered
+            buf += 4; // carry over from pack_global_ordered
         }
         else if (datalist->data_type == Proposal_Type)
         {
             pack_proposal(datalist->data_type, buf);
-            buf += 4;               // carry over  from pack_client_update
+            buf += 4; // carry over  from pack_client_update
         }
-        datalist = datalist->next;      // advance datalist
+        datalist = datalist->next; // advance datalist
         stored++;
     }
 }
@@ -168,7 +167,7 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
         {
             Globally_Ordered_Update *update = malloc(sizeof(Globally_Ordered_Update));
             unpack_global_ordered(update, buf);
-            buf += 4;               // carry over from unpack_global_ordered
+            buf += 4; // carry over from unpack_global_ordered
 
             append_to_list(update, datalist, data_type);
         }
@@ -176,7 +175,7 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
         {
             Proposal *proposal = malloc(sizeof(Proposal));
             unpack_proposal(proposal, buf);
-            buf += 4;               // carry over from unpack_proposal
+            buf += 4; // carry over from unpack_proposal
 
             append_to_list(proposal, datalist, data_type);
         }
@@ -207,7 +206,7 @@ void unpack_proposal(Proposal *msg, unsigned char *buf)
     buf += 4;
     msg->seq = unpacki32(buf);
     buf += 4;
-    
+
     Client_Update *update = malloc(sizeof(Client_Update));
     unpack_client_update(update, buf);
     msg->update = update;
@@ -237,7 +236,7 @@ void pack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
     buf += 4;
     packi32(buf, msg->seq);
     buf += 4;
-    
+
     pack_client_update(msg->update, buf);
 }
 
@@ -247,7 +246,7 @@ void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
     buf += 4;
     msg->seq = unpacki32(buf);
     buf += 4;
-    
+
     Cleint_Update *update = malloc(sizeof(Client_Update));
     unpack_client_update(update, buf);
     msg->update = update;

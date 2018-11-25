@@ -17,7 +17,7 @@ extern int NUM_PEERS;
 extern int Prepare *PREPARE_OKS[];
 extern bool PROGRESS_TIMER_SET;
 
-// Conflict checks to run on incoming messages. 
+// Conflict checks to run on incoming messages.
 // Messages for which a conflict exists are discarded.
 // If the function returns true then there is a conflit.
 bool check_view_change(View_Change *msg);
