@@ -4,6 +4,7 @@
 
 int list_length(node_t *list)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Getting list length\n");
     if (list->data == NULL)
         return 0;
 
@@ -18,6 +19,7 @@ int list_length(node_t *list)
 
 int append_to_list(void *new_data, node_t *list, int data_type)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Appending to list\n");
     if (list->data == NULL)
     {
         list->data = new_data;
@@ -44,6 +46,7 @@ int append_to_list(void *new_data, node_t *list, int data_type)
 
 int clear_list(node_t *list)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Clearing list\n");
     int length = list_length(list);
     node_t *next_node;
     while (list->next != NULL)
@@ -58,6 +61,7 @@ int clear_list(node_t *list)
 
 void *pop_from_queue(node_t *q)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Popping from queue\n");
     void *data = q->data;
     if (q->next != NULL)
     {
@@ -73,6 +77,7 @@ void *pop_from_queue(node_t *q)
 
 node_t *get_index(node_t *list, int index)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Getting index %d\n", index);
     node_t *tmp_list = list;
     while (tmp_list->next != NULL)
     {
@@ -89,6 +94,7 @@ node_t *get_index(node_t *list, int index)
 // Amortize resizing of array by increasing size of array by 2
 uint32_t *increase_array_size(uint32_t *old_array)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Increasing array size\n");
     uint32_t *new_array = malloc(sizeof(uint32_t) * 2 * MAX_CLIENT_ID);
     memset(new_arry, 0, 2 * MAX_CLIENT_ID);
     int i;

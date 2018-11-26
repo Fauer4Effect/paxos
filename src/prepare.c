@@ -13,6 +13,7 @@
 // client_update is uin32_t * 4
 int datalist_storage_reqs(node_t *datalist)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Computing datalist storage reqs\n");
     int size = 0;
     int num_nodes = list_length(datalist);
     int i;
@@ -34,6 +35,7 @@ int datalist_storage_reqs(node_t *datalist)
 
 node_t *construct_datalist(int aru)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Constructing datalist\n");
     node_t *datalist = malloc(sizeof(node_t));
     int i;
     for (i = aru + 1; i < MAX_CLIENT_ID; i++)
@@ -57,6 +59,7 @@ node_t *construct_datalist(int aru)
 
 bool view_prepared_ready(int view)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Check if view prepared ready\n");
     int i;
     int count;
     for (i = 0; i < NUM_PEERS; i++)
@@ -71,6 +74,7 @@ bool view_prepared_ready(int view)
 
 void shift_to_prepare_phase()
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Shift to prepare phase\n");
     LAST_INSTALLED = LAST_ATTEMPTED;
     Prepare *prepare = malloc(sizeof(Prepare));
     prepare->server_id = MY_SERVER_ID;
@@ -115,6 +119,7 @@ void shift_to_prepare_phase()
 
 void received_prepare(Prepare *prepare)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare\n");
     Prepare_OK *prepare_ok;
     int leader_id = prepare->view % NUM_PEERS;
     if (STATE == LEADER_ELECTION)
@@ -157,6 +162,7 @@ void received_prepare(Prepare *prepare)
 
 void received_prepare_ok(Prepare_OK *prepare_ok)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare ok\n");
     apply_prepare_ok(prepare_ok);
     if (view_prepared_ready(prepare_ok->view))
     {

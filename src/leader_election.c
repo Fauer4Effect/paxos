@@ -21,6 +21,7 @@ bool preinstall_ready(int view)
 void shift_to_leader_election(int view)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Shift to leader election\n");
+    
     int i;
     for (i = 0; i < NUM_PEERS; i++)
     {

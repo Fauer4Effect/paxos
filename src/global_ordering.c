@@ -11,6 +11,7 @@
 
 void received_proposal(Proposal *p)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received proposal\n");
     // apply proposal
     apply_proposal(p);
 
@@ -38,11 +39,13 @@ void received_proposal(Proposal *p)
 
 void received_accept(Accept *acc)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received accept\n");
     // apply accept
     apply_accept(acc);
 
     if (globally_ordered_ready(acc->seq))
     {
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "Globally ordered ready\n");
         Globally_Ordered_Update *global = malloc(sizeof(Globally_Ordered_Update));
         global->server_id = MY_SERVER_ID;
         global->seq = acc->seq;
@@ -60,11 +63,13 @@ void received_accept(Accept *acc)
 
 void executed_client_update(Client_Update *u)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Executed client update\n");
     advance_aru();
     if (u->server_id == MY_SERVER_ID)
     {
         // XXX Reply to client
-        logger(1, LOG_LEVEL, MY_SERVER_ID, "Executed client update %d\n", u->client_id);
+        // logger(1, LOG_LEVEL, MY_SERVER_ID, "Executed client update %d\n", u->client_id);
+        printf("Executed client update %d\n", u->client_ud);
 
         if (PENDING_UPDATES[u->client_id] != 0)
         {
@@ -82,6 +87,7 @@ void executed_client_update(Client_Update *u)
 
     if (STATE != LEADER_ELECTION)
     {
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "Setting progress timer\n");
         // restart progress timer
         gettimeofday(&PROGRESS_TIMER, NULL);
         PROGRESS_TIMER_SET = true;
@@ -94,6 +100,7 @@ void executed_client_update(Client_Update *u)
 
 void send_proposal()
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Sending proposal\n");
     int seq = LAST_PROPOSED + 1;
     if (GLOBAL_HISTORY[seq]->global_ordered_update != 0)
     {
@@ -143,6 +150,7 @@ void send_proposal()
 
 bool globally_ordered_ready(int seq)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Check if globally ordered ready\n");
     Proposal *p = GLOBAL_HISTORY[seq]->proposal;
     if (p == NULL)
         return false;
@@ -161,6 +169,7 @@ bool globally_ordered_ready(int seq)
 
 void advance_aru()
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Advance aru\n");
     int i = LOCAL_ARU + 1;
     while (1)
     {

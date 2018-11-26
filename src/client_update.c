@@ -7,8 +7,11 @@
 
 void client_update_handler(Client_Update *u)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "In client update handler\n");
+    
     if (STATE == LEADER_ELECTION)
     {
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "State: LEADER ELECTION\n");
         if (u->server_id == MY_SERVER_ID)
             return;
         if (enqueue_update(u))
@@ -16,6 +19,7 @@ void client_update_handler(Client_Update *u)
     }
     if (STATE == REG_NONLEADER)
     {
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "State: REG NON LEADER\n");
         if (u->server_id == MY_SERVER_ID)
         {
             add_to_pending_updates(u);
@@ -41,6 +45,7 @@ void client_update_handler(Client_Update *u)
     }
     if (STATE == REG_LEADER)
     {
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "State: REG LEADER\n");
         if (enqueue_update(u))
         {
             if (u->server_id == MY_SERVER_ID)
@@ -52,6 +57,7 @@ void client_update_handler(Client_Update *u)
 
 void update_timer_expired(int client_id)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Update time expired\n");
     // restart update timer (client id)
     UPDATE_TIMER[client_id] = (unsigned)time(NULL);
     if (STATE == REG_NONLEADER)
@@ -79,6 +85,7 @@ void update_timer_expired(int client_id)
 
 bool enqueue_update(Client_Update *u)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking enqueue update\n");
     if (u->timestamp <= LAST_EXECUTED[u->client_id])
         return false;
     if (u->timestamp <= LAST_ENQUEUED[u->client_id])
@@ -93,6 +100,7 @@ bool enqueue_update(Client_Update *u)
 
 void add_to_pending_updates(Client_Update *u)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Adding to pending updates\n");
     PENDING_UPDATES[u->client_id] = u;
     // Set update timer(u->client id)
     UPDATE_TIMER[client_id] = (unsigned)time(NULL);
@@ -103,6 +111,7 @@ void add_to_pending_updates(Client_Update *u)
 // FIXME need to know what a bound update is
 void enqueue_unbound_pending_updates()
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Enqueue unbound pending updates\n");
     Client_Update *u;
     int i;
     for (i = 0; i < MAX_CLIENT_ID; i++)
@@ -117,6 +126,7 @@ void enqueue_unbound_pending_updates()
 // FIXME how to tell when something is bound
 void remove_bound_updates_from_queue()
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Remove bound updates\n");
     Client_update *u;
     int i;
     for (i = 0; i < list_length(UPDATE_QUEUE); i++)
