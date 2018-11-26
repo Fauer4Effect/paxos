@@ -13,12 +13,12 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "client_update.h"
+#include "messages.h"
 #include "data_structures.h"
+#include "client_update.h"
 #include "global_ordering.h"
 #include "leader_election.h"
 #include "logging.h"
-#include "messages.h"
 #include "multicast.h"
 #include "prepare.h"
 #include "serialize.h"
