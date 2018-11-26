@@ -15,10 +15,10 @@ extern int MY_SERVER_ID;
 typedef struct
 {
     Proposal *proposal; // latest Proposal accepted for this sequence number, if any
-    Accept *accepts[];  // array of corresponding Accept messages, indexed by server_id
-                        // size of NUM_PEERS
     Globally_Ordered_Update *global_ordered_update;
     // ordered update for this sequence number, if any
+    Accept *accepts[];  // array of corresponding Accept messages, indexed by server_id
+                        // size of NUM_PEERS
 } Global_Slot;
 
 typedef struct node_t
@@ -34,8 +34,8 @@ int list_length(node_t *list);
 int append_to_list(void *new_data, node_t *list, int data_type);
 int clear_list(node_t *list);
 void *pop_from_queue(node_t *q);
-node_t *get_index(node_t *list, int index)
-    uint32_t *increase_array_size(uint32_t *old_array);
+node_t *get_index(node_t *list, int index);
+uint32_t *increase_array_size(uint32_t *old_array);
 
 
 #endif
