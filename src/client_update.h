@@ -1,3 +1,6 @@
+#ifndef _CLIENTH_
+#define _CLIENTH_
+
 
 #include "messages.h"
 
@@ -11,3 +14,5 @@ bool enqueue_update(Client_Update *u);
 void add_to_pending_updates(Client_Update *u);
 void enqueue_unbound_pending_updates();
 void remove_bound_updates_from_queue();
+
+#endif

@@ -1,4 +1,5 @@
-
+#ifndef _DATAH_
+#define _DATAH_
 
 #include "messages.h"
 #include "logging.h"
@@ -35,3 +36,6 @@ int clear_list(node_t *list);
 void *pop_from_queue(node_t *q);
 node_t *get_index(node_t *list, int index)
     uint32_t *increase_array_size(uint32_t *old_array);
+
+
+#endif

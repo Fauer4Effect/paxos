@@ -1,3 +1,6 @@
+#ifndef _PREPAREH_
+#define _PREPAREH_
+
 
 #include "messages.h"
 #include "update_globals.h"
@@ -14,3 +17,5 @@ extern uint32_t *LAST_ENQUEUED[];
 extern int STATE;
 extern int NUM_PEERS;
 extern int MAX_CLIENT_ID;
+
+#endif

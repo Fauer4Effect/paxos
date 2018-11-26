@@ -1,3 +1,6 @@
+#ifndef _UPDATEH_
+#define _UPDATEH_
+
 #include <stdbool.h>
 
 #include "data_structures.h"
@@ -39,3 +42,5 @@ void apply_globally_ordered_update(Globally_Ordered_Update *msg);
 
 void shift_to_reg_leader();
 void shift_to_reg_non_leader();
+
+#endif

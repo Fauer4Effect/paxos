@@ -1,3 +1,6 @@
+#ifndef _MESSAGESH_
+#define _MESSAGESH_
+
 #include <stdint.h>
 
 #include "data_structures.h"
@@ -87,3 +90,5 @@ typedef struct
     uint32_t seq;          // sequence number of the update that was ordered
     Client_Update *update; // client update bound to the seq and globally ordered
 } Globally_Ordered_Update;
+
+#endif

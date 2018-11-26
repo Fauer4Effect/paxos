@@ -1,3 +1,6 @@
+#ifndef _SERIALH_
+#define _SERIALH_
+
 #include <stdint.h>
 
 #include "messages.h"
@@ -31,3 +34,5 @@ void unpack_accept(Accept *msg, unsigned char *buf);
 
 void pack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf);
 void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf);
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef _LOGGINGH_
+#define _LOGGINGH_
+
 
 #define DEBUG 0
 #define INFO 1
@@ -12,3 +15,5 @@ log_level designates the level of messages to print
     0 = silent, no messages will print
 */
 void logger(int type, int log_level, int process_id, char *msg, ...);
+
+#endif

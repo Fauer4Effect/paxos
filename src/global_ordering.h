@@ -1,3 +1,6 @@
+#ifndef _GLOBALH_
+#define _GLOBALH_
+
 #include <stdbool.h>
 
 #include "messages.h"
@@ -23,3 +26,5 @@ void executed_client_update(Client_Update *u);
 void send_proposal();
 bool globally_ordered_ready(int seq);
 void advance_aru();
+
+#endif
