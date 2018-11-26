@@ -20,10 +20,10 @@ typedef struct
     // ordered update for this sequence number, if any
 } Global_Slot;
 
-typedef struct node
+typedef struct node_t
 {
     void *data;        // pointer to arbitrary data
-    struct node *next; // pointer to next node
+    struct node_t *next; // pointer to next node
     uin32_t data_type; // normally you would only want to have a single data type in the
                        // list but the data_list in the prepare_ok message has two kinds
                        // so we can support this as wellS
