@@ -19,7 +19,7 @@ int datalist_storage_reqs(node_t *datalist)
     int i;
     for (i = 0; i < num_nodes; i++)
     {
-        size += (sizeof(uint32_t) + sizeof(node *));
+        size += (sizeof(uint32_t) + sizeof(node_t *));
         if (datalist->data_type == Globally_Ordered_Update_Type)
         {
             size += (sizeof(uint32_t) * 3);
@@ -88,7 +88,6 @@ void shift_to_prepare_phase()
     Prepare_OK *prepare_ok = malloc(sizeof(Prepare_OK));
     prepare_ok->server_id = MY_SERVER_ID;
     prepare_ok->view = LAST_INSTALLED;
-    prepare_ok->size = list_length(datalist);
     prepare_ok->data_list = datalist;
 
     PREPARE_OKS[MY_SERVER_ID] = prepare_ok;
@@ -121,6 +120,7 @@ void received_prepare(Prepare *prepare)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare\n");
     Prepare_OK *prepare_ok;
+    node_t *datalist;
     int leader_id = prepare->view % NUM_PEERS;
     if (STATE == LEADER_ELECTION)
     {
@@ -131,7 +131,6 @@ void received_prepare(Prepare *prepare)
         prepare_ok = malloc(sizeof(Prepare_OK));
         prepare_ok->server_id = MY_SERVER_ID;
         prepare_ok->view = prepare->view;
-        prepare_ok->size = list_length(datalist);
         prepare_ok->data_list = datalist;
         PREPARE_OKS[MY_SERVER_ID] = prepare_ok;
 

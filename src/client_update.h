@@ -1,12 +1,14 @@
 #ifndef _CLIENTH_
 #define _CLIENTH_
 
+#include <stdbool.h>
 
 #include "messages.h"
 
 extern int STATE;
 extern int MY_SERVER_ID;
 extern int LAST_ENQUEUED;
+extern uint32_t *UPDATE_TIMER[];
 
 void client_update_handler(Client_Update *u);
 void update_timer_expired(int client_id);

@@ -17,7 +17,7 @@ extern int LAST_ATTEMPTED;
 extern Client_Update *UPDATE_QUEUE[];
 extern int UPDATE_QUEUE_SIZE;
 extern int NUM_PEERS;
-extern int Prepare *PREPARE_OKS[];
+extern Prepare *PREPARE_OKS[];
 extern bool PROGRESS_TIMER_SET;
 
 // Conflict checks to run on incoming messages.

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <netdb.h>
 #include <sys/socket.h>
 
 #include "logging.h"
@@ -73,7 +74,7 @@ void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
     }
     if (p == NULL)
     {
-        logger(1, LOG_LEVEL, MY_SERVER_ID, "Failed to connect to %s\n", PEERS[i]);
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Failed to connect to %s\n", PEERS[server_id]);
         exit(1);
     }
 

@@ -13,7 +13,7 @@ extern Prepare *PREPARE_OKS[];
 extern int MAX_CLIENT_ID;
 extern int LAST_ATTEMPTED;
 extern int MY_SERVER_ID;
-extern uint32_t *LAST_ENQUEUED[];
+extern uint32_t *LAST_ENQUEUED;
 extern bool PROGRESS_TIMER_SET;
 extern uint32_t PROGRESS_TIMEOUT;
 extern struct timeval PROGRESS_TIMER;

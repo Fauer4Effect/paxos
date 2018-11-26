@@ -117,7 +117,7 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     packi32(buf, msg->view);
     buf += 4;
 
-    int datalist_size = list_length(msg->datalist);
+    int datalist_size = list_length(msg->data_list);
     packi32(buf, datalist_size);
     buf += 4;
 
@@ -125,12 +125,13 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     // for each node in the datalist we need to pack it based on
     // its type
     int stored = 0;
-    node_t *datalist = msg->datalist;
+    node_t *datalist = msg->data_list;
     while (stored < datalist_size)
     {
         // each node has void *data, node *next, uint32_t data_type
         packi32(buf, datalist->data_type);
-        buf += 4 if (datalist->data_type == Globally_Ordered_Update_Type)
+        buf += 4; 
+        if (datalist->data_type == Globally_Ordered_Update_Type)
         {
             pack_global_ordered(datalist->data, buf);
             buf += 4; // carry over from pack_global_ordered
@@ -183,7 +184,7 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
         index++;
     }
 
-    msg->datalist = datalist;
+    msg->data_list = datalist;
 }
 
 void pack_proposal(Proposal *msg, unsigned char *buf)
@@ -247,7 +248,7 @@ void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
     msg->seq = unpacki32(buf);
     buf += 4;
 
-    Cleint_Update *update = malloc(sizeof(Client_Update));
+    Client_Update *update = malloc(sizeof(Client_Update));
     unpack_client_update(update, buf);
     msg->update = update;
 }

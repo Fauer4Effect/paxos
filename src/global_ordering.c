@@ -69,7 +69,7 @@ void executed_client_update(Client_Update *u)
     {
         // XXX Reply to client
         // logger(1, LOG_LEVEL, MY_SERVER_ID, "Executed client update %d\n", u->client_id);
-        printf("Executed client update %d\n", u->client_ud);
+        printf("Executed client update %d\n", u->client_id);
 
         if (PENDING_UPDATES[u->client_id] != 0)
         {
@@ -102,6 +102,7 @@ void send_proposal()
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Sending proposal\n");
     int seq = LAST_PROPOSED + 1;
+    Client_Update *u;
     if (GLOBAL_HISTORY[seq]->global_ordered_update != 0)
     {
         LAST_PROPOSED++;
@@ -154,7 +155,7 @@ bool globally_ordered_ready(int seq)
     Proposal *p = GLOBAL_HISTORY[seq]->proposal;
     if (p == NULL)
         return false;
-    Accept *accepts[] = GLOBAL_HISTORY[seq]->accepts;
+    Accept **accepts = GLOBAL_HISTORY[seq]->accepts;
     int i;
     int count;
     for (i = 0; i < NUM_PEERS; i++)

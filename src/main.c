@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
         PEERS = open_parse_hostfile(argv[4]);
     }
 
-    logger(0, LOG_LEVEl, MY_SERVER_ID, "Command line parsed\n");
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Command line parsed\n");
 
     // networking schtuff
     fd_set master;   // master file descriptor list
@@ -291,6 +291,7 @@ int main(int argc, char *argv[])
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Globals initialized\n");
 
     struct timeval cur_time;    // for checking if timers have expired
+    struct timeval select_timeout;
 
     for (;;)
     {
@@ -312,9 +313,9 @@ int main(int argc, char *argv[])
         logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking update timers\n");
         int j;
         for (j = 0; j < MAX_CLIENT_ID; j++)
-        {
+        {    
             gettimeofday(&cur_time, NULL);
-            if ((cut_time.tv_sec - UPDATE_TIMER[j]->tv_sec) > UPDATE_TIMEOUT)
+            if (((uint32_t)cur_time.tv_sec - *UPDATE_TIMER[j]) > UPDATE_TIMEOUT)
             {
                 logger(0, LOG_LEVEL, MY_SERVER_ID, "Update timer for %d expired\n", j);
                 update_timer_expired(j);
@@ -355,22 +356,22 @@ int main(int argc, char *argv[])
                 case Client_Update_Type:
                     logger(0, LOG_LEVEL, MY_SERVER_ID, "Received client update\n");
 
-                    unsigned char *recvd_update = malloc(header->size);
-                    Client_Update *update = malloc(sizeof(Client_Update));
+                    unsigned char *recvd_cupdate = malloc(header->size);
+                    Client_Update *cupdate = malloc(sizeof(Client_Update));
 
-                    if ((nbytes = recvfrom(listener, recvd_update, header->size, 0,
+                    if ((nbytes = recvfrom(listener, recvd_cupdate, header->size, 0,
                                            (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                     {
                         logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
                                nbytes, header->size);
                         exit(1);
                     }
-                    unpack_client_update(update, recvd_update);
+                    unpack_client_update(cupdate, recvd_cupdate);
 
                     // ??? No conflict check for client updates?
 
-                    client_update_handler(update);
-                    free(recvd_update);
+                    client_update_handler(cupdate);
+                    free(recvd_cupdate);
 
                     break;
 
@@ -381,7 +382,7 @@ int main(int argc, char *argv[])
                     unsigned char *recvd_vc = malloc(header->size);
                     View_Change *v = malloc(sizeof(View_Change));
 
-                    if ((nbytes = recvfrom(listener, recvd_vd, header->size, 0,
+                    if ((nbytes = recvfrom(listener, recvd_vc, header->size, 0,
                                            (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                     {
                         logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
@@ -549,7 +550,7 @@ int main(int argc, char *argv[])
                     logger(0, LOG_LEVEL, MY_SERVER_ID, "Received globally ordered update\n");
 
                     unsigned char *recvd_update = malloc(header->size);
-                    GLobally_Ordered_Update *update = malloc(sizeof(GLobally_Ordered_Update));
+                    Globally_Ordered_Update *update = malloc(sizeof(Globally_Ordered_Update));
 
                     if ((nbytes = recvfrom(listener, recvd_update, header->size, 0,
                                            (struct sockaddr *)&their_addr, &addrlen)) != header->size)
@@ -568,7 +569,7 @@ int main(int argc, char *argv[])
                     break;
                 }
 
-                free(recvd_head);
+                free(recvd_header);
                 free(header);
             }
         }

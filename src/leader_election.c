@@ -75,7 +75,7 @@ void received_view_change(View_Change *v)
     if ((v->attempted > LAST_ATTEMPTED) && !(PROGRESS_TIMER_SET))
     {
         shift_to_leader_election(v->attempted);
-        apply_view_change(vc);
+        apply_view_change(v);
     }
     if (v->attempted == LAST_ATTEMPTED)
     {

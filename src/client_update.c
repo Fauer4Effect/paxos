@@ -1,4 +1,4 @@
-
+#include <stdlib.h>
 
 #include "client_update.h"
 #include "messages.h"
@@ -30,11 +30,11 @@ void client_update_handler(Client_Update *u)
 
             Header *head = malloc(sizeof(Header));
             head->msg_type = Client_Update_Type;
-            head->size = sizeof(Client_Update));
+            head->size = sizeof(Client_Update);
             unsigned char *head_buf = malloc(sizeof(Header));
             pack_header(head, head_buf);
 
-            int leader_id = u->view % NUM_PEERS;
+            int leader_id = LAST_INSTALLED % NUM_PEERS;
 
             send_to_single_host(head_buf, sizeof(Header), update_buf, head->size, leader_id);
 
@@ -73,7 +73,7 @@ void update_timer_expired(int client_id)
         unsigned char *head_buf = malloc(sizeof(Header));
         pack_header(head, head_buf);
 
-        int leader_id = pending->view % NUM_PEERS;
+        int leader_id = LAST_INSTALLED % NUM_PEERS;
 
         send_to_single_host(head_buf, sizeof(Header), pending_buf, head->size, leader_id);
 
@@ -103,7 +103,7 @@ void add_to_pending_updates(Client_Update *u)
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Adding to pending updates\n");
     PENDING_UPDATES[u->client_id] = u;
     // Set update timer(u->client id)
-    UPDATE_TIMER[client_id] = (unsigned)time(NULL);
+    UPDATE_TIMER[u->client_id] = (unsigned)time(NULL);
 
     // XXX SYNC to disk
 }
@@ -127,7 +127,7 @@ void enqueue_unbound_pending_updates()
 void remove_bound_updates_from_queue()
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Remove bound updates\n");
-    Client_update *u;
+    Client_Update *u;
     int i;
     for (i = 0; i < list_length(UPDATE_QUEUE); i++)
     {

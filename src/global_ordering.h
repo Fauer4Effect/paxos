@@ -19,6 +19,7 @@ extern int NUM_PEERS;
 extern int LOCAL_ARU;
 extern int LOG_LEVEL;
 extern bool PROGRESS_TIMER_SET;
+extern uint32_t *UPDATE_TIMER[];
 
 void received_proposal(Proposal *p);
 void received_accept(Accept *acc);
