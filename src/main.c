@@ -24,7 +24,7 @@
 #include "serialize.h"
 #include "update_globals.h"
 
-#define LOG_LEVEL DEBUG // set log level to debug for logging
+int LOG_LEVEL = DEBUG; // set log level to debug for logging
 int MAX_CLIENT_ID = 32; // size of arrays that are indexed by client id
                         // updated by increase_array_size()
 
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
         for (j = 0; j < MAX_CLIENT_ID; j++)
         {    
             gettimeofday(&cur_time, NULL);
-            if (((uint32_t)cur_time.tv_sec - *UPDATE_TIMER[j]) > UPDATE_TIMEOUT)
+            if (((uint32_t)cur_time.tv_sec - UPDATE_TIMER[j]) > UPDATE_TIMEOUT)
             {
                 logger(0, LOG_LEVEL, MY_SERVER_ID, "Update timer for %d expired\n", j);
                 update_timer_expired(j);

@@ -4,8 +4,6 @@
 #include "messages.h"
 #include "logging.h"
 
-#define LOG_LEVEL DEBUG
-
 extern int NUM_PEERS;
 extern View_Change **VC;
 extern Prepare *PREPARED;
