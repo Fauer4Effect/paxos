@@ -20,6 +20,8 @@ extern int LOCAL_ARU;
 extern int LOG_LEVEL;
 extern bool PROGRESS_TIMER_SET;
 extern uint32_t *UPDATE_TIMER;
+extern int LEADER_ELECTION;
+extern int REG_LEADER;
 
 void received_proposal(Proposal *p);
 void received_accept(Accept *acc);

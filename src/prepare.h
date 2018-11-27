@@ -17,5 +17,6 @@ extern uint32_t *LAST_ENQUEUED;
 extern int STATE;
 extern int NUM_PEERS;
 extern int MAX_CLIENT_ID;
+extern int LEADER_ELECTION;
 
 #endif

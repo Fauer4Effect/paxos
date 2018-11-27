@@ -20,6 +20,9 @@ extern int UPDATE_QUEUE_SIZE;
 extern int NUM_PEERS;
 extern Prepare **PREPARE_OKS;
 extern bool PROGRESS_TIMER_SET;
+extern int LEADER_ELECTION;
+extern int REG_LEADER;
+extern int REG_NONLEADER;
 
 // Conflict checks to run on incoming messages.
 // Messages for which a conflict exists are discarded.

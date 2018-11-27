@@ -1,3 +1,4 @@
+#include <stdlib.h>
 
 #include "data_structures.h"
 #include "prepare.h"

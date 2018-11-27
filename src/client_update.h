@@ -9,6 +9,7 @@ extern int STATE;
 extern int MY_SERVER_ID;
 extern uint32_t *LAST_ENQUEUED;
 extern uint32_t *UPDATE_TIMER;
+extern int REG_NONLEADER;
 
 void client_update_handler(Client_Update *u);
 void update_timer_expired(int client_id);

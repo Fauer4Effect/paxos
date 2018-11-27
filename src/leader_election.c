@@ -1,8 +1,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
 #include "leader_election.h"
 #include "update_globals.h"
+#include "serialize.h"
+#include "multicast.h"
 
 bool preinstall_ready(int view)
 {
@@ -40,7 +43,6 @@ void shift_to_leader_election(int view)
 
     for (i = 0; i < MAX_CLIENT_ID; i++)
     {
-        free(LAST_ENQUEUED[i]);
         LAST_ENQUEUED[i] = 0;
     }
 

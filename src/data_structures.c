@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "data_structures.h"
 
@@ -47,7 +48,6 @@ int append_to_list(void *new_data, node_t *list, int data_type)
 int clear_list(node_t *list)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Clearing list\n");
-    int length = list_length(list);
     node_t *next_node;
     while (list->next != NULL)
     {

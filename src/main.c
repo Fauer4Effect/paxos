@@ -28,6 +28,11 @@ int LOG_LEVEL = DEBUG; // set log level to debug for logging
 int MAX_CLIENT_ID = 32; // size of arrays that are indexed by client id
                         // updated by increase_array_size()
 
+int LEADER_ELECTION = 1;
+int REG_LEADER = 2;
+int REG_NONLEADER = 3;
+
+
 // TODO Need to have a data structure probably so that you can tell when a client update
 // has been bound to a specific sequence number
 

@@ -110,6 +110,53 @@ void unpack_prepare(Prepare *msg, unsigned char *buf)
     msg->local_aru = unpacki32(buf);
 }
 
+void pack_proposal(Proposal *msg, unsigned char *buf)
+{
+    packi32(buf, msg->server_id);
+    buf += 4;
+    packi32(buf, msg->view);
+    buf += 4;
+    packi32(buf, msg->seq);
+    buf += 4;
+
+    pack_client_update(msg->update, buf);
+}
+
+void unpack_proposal(Proposal *msg, unsigned char *buf)
+{
+    msg->server_id = unpacki32(buf);
+    buf += 4;
+    msg->view = unpacki32(buf);
+    buf += 4;
+    msg->seq = unpacki32(buf);
+    buf += 4;
+
+    Client_Update *update = malloc(sizeof(Client_Update));
+    unpack_client_update(update, buf);
+    msg->update = update;
+}
+
+void pack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
+{
+    packi32(buf, msg->server_id);
+    buf += 4;
+    packi32(buf, msg->seq);
+    buf += 4;
+
+    pack_client_update(msg->update, buf);
+}
+
+void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
+{
+    msg->server_id = unpacki32(buf);
+    buf += 4;
+    msg->seq = unpacki32(buf);
+    buf += 4;
+
+    Client_Update *update = malloc(sizeof(Client_Update));
+    unpack_client_update(update, buf);
+    msg->update = update;
+}
 void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
 {
     packi32(buf, msg->server_id);
@@ -187,31 +234,6 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     msg->data_list = datalist;
 }
 
-void pack_proposal(Proposal *msg, unsigned char *buf)
-{
-    packi32(buf, msg->server_id);
-    buf += 4;
-    packi32(buf, msg->view);
-    buf += 4;
-    packi32(buf, msg->seq);
-    buf += 4;
-
-    pack_client_update(msg->update, buf);
-}
-
-void unpack_proposal(Proposal *msg, unsigned char *buf)
-{
-    msg->server_id = unpacki32(buf);
-    buf += 4;
-    msg->view = unpacki32(buf);
-    buf += 4;
-    msg->seq = unpacki32(buf);
-    buf += 4;
-
-    Client_Update *update = malloc(sizeof(Client_Update));
-    unpack_client_update(update, buf);
-    msg->update = update;
-}
 
 void pack_accept(Accept *msg, unsigned char *buf)
 {
@@ -231,24 +253,4 @@ void unpack_accept(Accept *msg, unsigned char *buf)
     msg->seq = unpacki32(buf);
 }
 
-void pack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
-{
-    packi32(buf, msg->server_id);
-    buf += 4;
-    packi32(buf, msg->seq);
-    buf += 4;
 
-    pack_client_update(msg->update, buf);
-}
-
-void unpack_global_ordered(Globally_Ordered_Update *msg, unsigned char *buf)
-{
-    msg->server_id = unpacki32(buf);
-    buf += 4;
-    msg->seq = unpacki32(buf);
-    buf += 4;
-
-    Client_Update *update = malloc(sizeof(Client_Update));
-    unpack_client_update(update, buf);
-    msg->update = update;
-}

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <sys/socket.h>
+#include <string.h>
 
 #include "logging.h"
 #include "messages.h"
