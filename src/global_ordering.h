@@ -9,17 +9,17 @@
 extern int LAST_PROPOSED;
 extern int MY_SERVER_ID;
 extern int LAST_INSTALLED;
-extern Global_Slot *GLOBAL_HISTORY[];
-extern Client_Update *PENDING_UPDATES[];
-extern uint32_t *LAST_EXECUTED[];
+extern Global_Slot **GLOBAL_HISTORY;
+extern Client_Update **PENDING_UPDATES;
+extern uint32_t *LAST_EXECUTED;
 extern int STATE;
 extern struct timeval PROGRESS_TIMER;
-extern Client_Update *UPDATE_QUEUE[];
+extern node_t *UPDATE_QUEUE;
 extern int NUM_PEERS;
 extern int LOCAL_ARU;
 extern int LOG_LEVEL;
 extern bool PROGRESS_TIMER_SET;
-extern uint32_t *UPDATE_TIMER[];
+extern uint32_t *UPDATE_TIMER;
 
 void received_proposal(Proposal *p);
 void received_accept(Accept *acc);

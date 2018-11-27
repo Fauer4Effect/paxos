@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 extern int NUM_PEERS;
-extern char *PEERS[];
+extern char **PEERS;
 extern char *PORT;
 extern int LOG_LEVEL;
 extern int MY_SERVER_ID;

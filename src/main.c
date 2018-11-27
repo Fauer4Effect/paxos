@@ -61,7 +61,7 @@ Global_Slot **GLOBAL_HISTORY;  // array of global_slots indexed by sequence numb
 struct timeval PROGRESS_TIMER; // timeout on making global progress
 bool PROGRESS_TIMER_SET;       // keep track of whether the progress time was set
 uint32_t PROGRESS_TIMEOUT;     // how long to wait until PROGRESS_TIMER is timed out
-uint32_t **UPDATE_TIMER;       // array of timeouts, indexed by client id
+uint32_t *UPDATE_TIMER;       // array of timeouts, indexed by client id
                                // dynamic size by increase_array_size()
 uint32_t UPDATE_TIMEOUT;       // how long to wait until UPDATE_TIMER is timed out
 

@@ -4,20 +4,21 @@
 #include <stdbool.h>
 
 #include "data_structures.h"
+#include "messages.h"
 
 extern int MY_SERVER_ID;
 extern int STATE;
 extern int LAST_INSTALLED;
-extern Global_Slot *GLOBAL_HISTORY[];
-extern View_Change *VC[];
+extern Global_Slot **GLOBAL_HISTORY;
+extern View_Change **VC;
 extern Prepare *PREPARED;
 extern int LAST_PROPOSED;
 extern int LOCAL_ARU;
 extern int LAST_ATTEMPTED;
-extern Client_Update *UPDATE_QUEUE[];
+extern node_t *UPDATE_QUEUE;
 extern int UPDATE_QUEUE_SIZE;
 extern int NUM_PEERS;
-extern Prepare *PREPARE_OKS[];
+extern Prepare **PREPARE_OKS;
 extern bool PROGRESS_TIMER_SET;
 
 // Conflict checks to run on incoming messages.
