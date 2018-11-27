@@ -102,7 +102,7 @@ void initialize_globals()
     GLOBAL_HISTORY = malloc(sizeof(Global_Slot *) * MAX_CLIENT_ID);
     memset(GLOBAL_HISTORY, 0, sizeof(Global_Slot *) * MAX_CLIENT_ID);
 
-    PROGRESS_TIMER_SET = false;
+    PROGRESS_TIMER_SET = true;
     PROGRESS_TIMEOUT = 2; // how about setting to 2 sec for first timeout
     UPDATE_TIMEOUT = 2;
 
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
     int listener; // listening socket descriptor
     // int newfd;                              // newly accept()ed socket descriptor
     struct sockaddr_storage their_addr; // client address
-    socklen_t addrlen;
+    socklen_t addrlen = sizeof(their_addr);
 
     int nbytes;
 
@@ -280,11 +280,11 @@ int main(int argc, char *argv[])
     }
     freeaddrinfo(ai);
 
-    if (listen(listener, 10) == -1)
-    {
-        logger(1, LOG_LEVEL, MY_SERVER_ID, "listen fail\n");
-        exit(1);
-    }
+    // if (listen(listener, 10) == -1)
+    // {
+    //     logger(1, LOG_LEVEL, MY_SERVER_ID, "listen fail\n");
+    //     exit(1);
+    // }
 
     // add listener to master set
     FD_SET(listener, &master);
@@ -319,6 +319,10 @@ int main(int argc, char *argv[])
         int j;
         for (j = 0; j < MAX_CLIENT_ID; j++)
         {    
+            if (UPDATE_TIMER[j] == 0)
+            {
+                continue;
+            }
             gettimeofday(&cur_time, NULL);
             if (((uint32_t)cur_time.tv_sec - UPDATE_TIMER[j]) > UPDATE_TIMEOUT)
             {
@@ -345,7 +349,7 @@ int main(int argc, char *argv[])
                 unsigned char *recvd_header = malloc(sizeof(Header));
                 Header *header = malloc(sizeof(Header));
 
-                if ((nbytes = recvfrom(listener, recvd_header, sizeof(Header), 0,
+                if ((nbytes = recvfrom(i, recvd_header, sizeof(Header), 0,
                                        (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Receive length\n");
