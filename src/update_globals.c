@@ -4,6 +4,8 @@
 #include "messages.h"
 #include "data_structures.h"
 #include "update_globals.h"
+#include "global_ordering.h"
+#include "client_update.h"
 
 bool check_view_change(View_Change *msg)
 {
@@ -93,8 +95,7 @@ void apply_prepare_ok(Prepare_OK *msg)
     if (PREPARE_OKS[msg->server_id] != 0)
         return;
     PREPARE_OKS[msg->server_id] = msg;
-    // for each entry e in data_list, apply e to data structures
-    void *e;
+    // for each entry in data_list, apply e to data structures
     node_t *datalist = msg->data_list;
     while (1)
     {

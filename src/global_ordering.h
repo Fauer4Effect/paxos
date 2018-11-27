@@ -5,6 +5,7 @@
 
 #include "messages.h"
 #include "data_structures.h"
+#include "update_globals.h"
 
 extern int LAST_PROPOSED;
 extern int MY_SERVER_ID;

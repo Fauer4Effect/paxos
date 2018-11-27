@@ -1,9 +1,12 @@
 #include <stdlib.h>
+#include <time.h>
 
 #include "client_update.h"
 #include "messages.h"
 #include "data_structures.h"
 #include "global_ordering.h"
+#include "serialize.h"
+#include "multicast.h"
 
 void client_update_handler(Client_Update *u)
 {

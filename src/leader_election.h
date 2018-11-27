@@ -3,6 +3,7 @@
 
 #include "messages.h"
 #include "logging.h"
+#include "prepare.h"
 
 extern int NUM_PEERS;
 extern View_Change **VC;

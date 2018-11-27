@@ -185,7 +185,7 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
         }
         else if (datalist->data_type == Proposal_Type)
         {
-            pack_proposal(datalist->data_type, buf);
+            pack_proposal(datalist->data, buf);
             buf += 4; // carry over  from pack_client_update
         }
         datalist = datalist->next; // advance datalist

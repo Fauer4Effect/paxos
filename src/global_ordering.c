@@ -1,6 +1,8 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <time.h>
 
 #include "messages.h"
 #include "global_ordering.h"

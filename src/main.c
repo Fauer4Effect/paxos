@@ -545,7 +545,7 @@ int main(int argc, char *argv[])
                         break;
                     }
 
-                    recevied_accept(acc);
+                    received_accept(acc);
                     free(recvd_acc);
 
                     break;
