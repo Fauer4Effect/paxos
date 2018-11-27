@@ -121,14 +121,14 @@ void apply_proposal(Proposal *msg)
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Applying proposal\n");
     if (GLOBAL_HISTORY[msg->seq]->global_ordered_update != 0)
         return;
-    Proposal *p_prime = GLOBAL_HISTORY[msg->seq];
+    Proposal *p_prime = GLOBAL_HISTORY[msg->seq]->proposal;
     if (p_prime != 0)
     {
         if (msg->view > p_prime->view)
         {
             GLOBAL_HISTORY[msg->seq]->proposal = msg;
             int i;
-            for (int i = 0; i < NUM_PEERS; i++)
+            for (i = 0; i < NUM_PEERS; i++)
             {
                 GLOBAL_HISTORY[msg->seq]->accepts[i] = 0;
             }

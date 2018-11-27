@@ -113,7 +113,7 @@ void send_proposal()
 
     if (GLOBAL_HISTORY[seq]->proposal != 0)
     {
-        Client_Update *u = GLOBAL_HISTORY[seq]->proposal->update;
+        u = GLOBAL_HISTORY[seq]->proposal->update;
     }
     else if (list_length(UPDATE_QUEUE) == 0)
     {
@@ -121,7 +121,7 @@ void send_proposal()
     }
     else
     {
-        Client_Update *u = pop_from_queue(UPDATE_QUEUE);
+        u = pop_from_queue(UPDATE_QUEUE);
     }
 
     Proposal *p = malloc(sizeof(Proposal));

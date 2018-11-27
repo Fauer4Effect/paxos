@@ -52,7 +52,7 @@ View_Change **VC;   // array of View_Change messages, indexed by server_id
 
 // prepare phase variables
 Prepare *PREPARED;      // the Prepare message from last preinstalled view, if any
-Prepare **PREPARE_OKS;  // array of Prepare_OK messages received, indexed by serv id
+Prepare_OK **PREPARE_OKS;  // array of Prepare_OK messages received, indexed by serv id
                         // size of NUM_PEERS
 
 // global ordering variables

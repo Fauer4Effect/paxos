@@ -2,6 +2,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "logging.h"
 #include "messages.h"
@@ -18,7 +19,9 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
         int sockfd;
         struct addrinfo hints, *servinfo, *p;
         int rv;
-        int numbytes;
+        // Do we want to resend the message if it doesn't send completely?
+        // don't want to clog up the network
+        // int numbytes;
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
@@ -56,7 +59,7 @@ void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
-    int numbytes;
+    // int numbytes;
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;

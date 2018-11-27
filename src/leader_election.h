@@ -8,7 +8,7 @@
 extern int NUM_PEERS;
 extern View_Change **VC;
 extern Prepare *PREPARED;
-extern Prepare **PREPARE_OKS;
+extern Prepare_OK **PREPARE_OKS;
 extern int MAX_CLIENT_ID;
 extern int LAST_ATTEMPTED;
 extern int MY_SERVER_ID;

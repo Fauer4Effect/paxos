@@ -18,7 +18,7 @@ extern int LAST_ATTEMPTED;
 extern node_t *UPDATE_QUEUE;
 extern int UPDATE_QUEUE_SIZE;
 extern int NUM_PEERS;
-extern Prepare **PREPARE_OKS;
+extern Prepare_OK **PREPARE_OKS;
 extern bool PROGRESS_TIMER_SET;
 extern int LEADER_ELECTION;
 extern int REG_LEADER;

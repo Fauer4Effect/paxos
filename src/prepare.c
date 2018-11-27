@@ -121,7 +121,6 @@ void received_prepare(Prepare *prepare)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare\n");
     Prepare_OK *prepare_ok;
-    node_t *datalist;
     int leader_id = prepare->view % NUM_PEERS;
     if (STATE == LEADER_ELECTION)
     {
@@ -147,7 +146,7 @@ void received_prepare(Prepare *prepare)
     Header *header = malloc(sizeof(Header));
     header->msg_type = Prepare_OK_Type;
     // server_id + view + size_of_datalist + datalist_storage_reqs
-    header->size = (sizeof(uint32_t) * 3) + datalist_storage_reqs(datalist);
+    header->size = (sizeof(uint32_t) * 3) + datalist_storage_reqs(prepare_ok->data_list);
     unsigned char *header_buf = malloc(sizeof(Header));
     pack_header(header, header_buf);
 
