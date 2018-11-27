@@ -19,4 +19,10 @@ extern int NUM_PEERS;
 extern int MAX_CLIENT_ID;
 extern int LEADER_ELECTION;
 
+node_t *construct_datalist(int aru);
+bool view_prepared_ready(int view);
+void shift_to_prepare_phase();
+void received_prepare(Prepare *prepare);
+void received_prepare_ok(Prepare_OK *prepare_ok);
+
 #endif
