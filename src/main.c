@@ -199,6 +199,53 @@ char **open_parse_hostfile(char *hostfile)
     return hosts;
 }
 
+int bind_socket()
+{
+    struct addrinfo hints, *servinfo, *p;
+    int rv;
+    int sockfd;
+    int yes = 1;
+    
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;        // ipv4 or ipv6
+    hints.ai_socktype = SOCK_DGRAM;     // UPD
+    hints.ai_flags = AI_PASSIVE;        
+
+    if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
+    {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        exit(1);
+    }
+
+    for (p = servinfo; p != NULL; p = p->ai_next)
+    {
+        sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (sockfd < 0)
+        {
+            continue;
+        }
+        
+        // prevent "address already in use"
+        setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+
+        if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
+        {
+            close(sockfd);
+            continue;
+        }
+        break;
+    }
+
+    if (p == NULL)
+    {
+        perror("listener failed to bind socket");
+        exit(1);
+    }
+    freeaddrinfo(servinfo);
+
+    return sockfd;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 5)
@@ -223,80 +270,17 @@ int main(int argc, char *argv[])
 
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Command line parsed\n");
 
-    // networking schtuff
-    fd_set master;   // master file descriptor list
-    fd_set read_fds; // temp file descriptor list for select()
-    int fdmax;       // maximum file descriptor num
-
-    int listener; // listening socket descriptor
-    // int newfd;                              // newly accept()ed socket descriptor
-    struct sockaddr_storage their_addr; // client address
-    socklen_t addrlen = sizeof(their_addr);
-
-    int nbytes;
-
-    int yes = 1; // for setsockopt() SO_REUSEADDR
-    int i, rv;
-
-    struct addrinfo hints, *ai, *p;
-
-    FD_ZERO(&master); // clear master and temp sets
-    FD_ZERO(&read_fds);
-
-    // get us a socket and bind it
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-    if ((rv = getaddrinfo(NULL, PORT, &hints, &ai)) != 0)
-    {
-        logger(1, LOG_LEVEL, MY_SERVER_ID, "selectserver: %s\n", gai_strerror(rv));
-        exit(1);
-    }
-
-    for (p = ai; p != NULL; p = p->ai_next)
-    {
-        listener = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (listener < 0)
-        {
-            continue;
-        }
-
-        // prevent "address already in use"
-        setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-
-        if (bind(listener, p->ai_addr, p->ai_addrlen) < 0)
-        {
-            close(listener);
-            continue;
-        }
-        break;
-    }
-
-    if (p == NULL)
-    {
-        logger(1, LOG_LEVEL, MY_SERVER_ID, "selectserver: failed to bind\n");
-        exit(1);
-    }
-    freeaddrinfo(ai);
-
-    // if (listen(listener, 10) == -1)
-    // {
-    //     logger(1, LOG_LEVEL, MY_SERVER_ID, "listen fail\n");
-    //     exit(1);
-    // }
-
-    // add listener to master set
-    FD_SET(listener, &master);
-    fdmax = listener;
-
+    int listener = bind_socket();
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Networking setup complete\n");
 
     initialize_globals();
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Globals initialized\n");
 
     struct timeval cur_time;    // for checking if timers have expired
-    struct timeval select_timeout;
+    fd_set readfds;
+    struct timeval tv;
+    tv.tv_sec = 2;
+    tv.tv_usec = 0;
 
     for (;;)
     {
@@ -331,256 +315,256 @@ int main(int argc, char *argv[])
             }
         }
 
-        read_fds = master; // copy fd set
-        select_timeout.tv_sec = 0;
-        select_timeout.tv_usec = 500000;
-
-        if (select(fdmax + 1, &read_fds, NULL, NULL, &select_timeout) == -1)
+        FD_ZERO(&readfds);
+        FD_SET(listener, &readfds);
+        int select_ret;
+        if ((select_ret = select(listener+1, &readfds, NULL, NULL, &tv)) == -1)
         {
-            logger(1, LOG_LEVEL, MY_SERVER_ID, "Failed on select\n");
+            logger(1, LOG_LEVEL, MY_SERVER_ID, "Call to select failed\n");
             exit(1);
         }
 
-        for (i = 0; i <= fdmax; i++)
+        // something to read on this socket
+        if (FD_ISSET(listener, &readfds))
         {
-            // something to read on this socket
-            if (FD_ISSET(i, &read_fds))
-            {
-                unsigned char *recvd_header = malloc(sizeof(Header));
-                Header *header = malloc(sizeof(Header));
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "Message to recevied\n");
+            unsigned char *recvd_header = malloc(sizeof(Header));
+            Header *header = malloc(sizeof(Header));
 
-                if ((nbytes = recvfrom(i, recvd_header, sizeof(Header), 0,
-                                       (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))
+            struct sockaddr_storage their_addr;
+            socklen_t addrlen = sizeof(their_addr);
+
+            if ((nbytes = recvfrom(listener, recvd_header, sizeof(Header), 0,
+                                    (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))
+            {
+                logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d not %d\n", nbytes, sizeof(Header));
+                exit(1);
+            }
+            unpack_header(header, recvd_header);
+
+            switch (header->msg_type)
+            {
+            // received client update
+            // ??? I'm pretty sure this is the level of interaction where the third party
+            // application ends up interacting with the paxos service
+            case Client_Update_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received client update\n");
+
+                unsigned char *recvd_cupdate = malloc(header->size);
+                Client_Update *cupdate = malloc(sizeof(Client_Update));
+
+                if ((nbytes = recvfrom(listener, recvd_cupdate, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
-                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Receive length\n");
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
                     exit(1);
                 }
-                unpack_header(header, recvd_header);
+                unpack_client_update(cupdate, recvd_cupdate);
 
-                switch (header->msg_type)
+                // ??? No conflict check for client updates?
+
+                client_update_handler(cupdate);
+                free(recvd_cupdate);
+
+                break;
+
+            // received view change
+            case View_Change_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received view change\n");
+
+                unsigned char *recvd_vc = malloc(header->size);
+                View_Change *v = malloc(sizeof(View_Change));
+
+                if ((nbytes = recvfrom(listener, recvd_vc, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
-                // received client update
-                // ??? I'm pretty sure this is the level of interaction where the third party
-                // application ends up interacting with the paxos service
-                case Client_Update_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received client update\n");
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_view_change(v, recvd_vc);
 
-                    unsigned char *recvd_cupdate = malloc(header->size);
-                    Client_Update *cupdate = malloc(sizeof(Client_Update));
-
-                    if ((nbytes = recvfrom(listener, recvd_cupdate, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_client_update(cupdate, recvd_cupdate);
-
-                    // ??? No conflict check for client updates?
-
-                    client_update_handler(cupdate);
-                    free(recvd_cupdate);
-
-                    break;
-
-                // received view change
-                case View_Change_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received view change\n");
-
-                    unsigned char *recvd_vc = malloc(header->size);
-                    View_Change *v = malloc(sizeof(View_Change));
-
-                    if ((nbytes = recvfrom(listener, recvd_vc, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_view_change(v, recvd_vc);
-
-                    // conflict checks return true if there is a conflict
-                    if (check_view_change(v))
-                    {
-                        logger(0, LOG_LEVEL, MY_SERVER_ID,
-                               "Received view change has conflicts\n");
-                        break;
-                    }
-
-                    received_view_change(v);
-                    free(recvd_vc);
-
-                    break;
-
-                // received vc proof
-                case VC_Proof_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received vc proof\n");
-
-                    unsigned char *recvd_proof = malloc(header->size);
-                    VC_Proof *proof = malloc(sizeof(VC_Proof));
-
-                    if ((nbytes = recvfrom(listener, recvd_proof, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_vc_proof(proof, recvd_proof);
-
-                    //conflict checks
-                    if (check_vc_proof(proof))
-                    {
-                        logger(0, LOG_LEVEL, MY_SERVER_ID,
-                               "Received vc proof has conflicts\n");
-                        break;
-                    }
-
-                    received_vc_proof(proof);
-                    free(recvd_proof);
-
-                    break;
-
-                // received prepare
-                case Prepare_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare\n");
-
-                    unsigned char *recvd_prep = malloc(header->size);
-                    Prepare *prep = malloc(sizeof(Prepare));
-
-                    if ((nbytes = recvfrom(listener, recvd_prep, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_prepare(prep, recvd_prep);
-
-                    if (check_prepare(prep))
-                    {
-                        logger(0, LOG_LEVEL, MY_SERVER_ID,
-                               "Received prepare has conflicts\n");
-                        break;
-                    }
-
-                    received_prepare(prep);
-                    free(recvd_prep);
-
-                    break;
-
-                // received prepare ok
-                case Prepare_OK_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare ok\n");
-
-                    unsigned char *recvd_ok = malloc(header->size);
-                    Prepare_OK *ok = malloc(sizeof(Prepare_OK));
-
-                    if ((nbytes = recvfrom(listener, recvd_ok, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_prepare_ok(ok, recvd_ok);
-
-                    if (check_prepare_ok(ok))
-                    {
-                        logger(0, LOG_LEVEL, MY_SERVER_ID,
-                               "Received prepare ok has conflicts\n");
-                        break;
-                    }
-
-                    received_prepare_ok(ok);
-                    free(recvd_ok);
-
-                    break;
-
-                // received proposal
-                case Proposal_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received proposal\n");
-
-                    unsigned char *recvd_prop = malloc(header->size);
-                    Proposal *prop = malloc(sizeof(Proposal));
-
-                    if ((nbytes = recvfrom(listener, recvd_prop, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_proposal(prop, recvd_prop);
-
-                    if (check_proposal(prop))
-                    {
-                        logger(0, LOG_LEVEL, MY_SERVER_ID,
-                               "Received proposal has conflicts\n");
-                        break;
-                    }
-
-                    received_proposal(prop);
-                    free(recvd_prop);
-
-                    break;
-
-                // received accept
-                case Accept_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received accept\n");
-
-                    unsigned char *recvd_acc = malloc(header->size);
-                    Accept *acc = malloc(sizeof(Accept));
-
-                    if ((nbytes = recvfrom(listener, recvd_acc, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_accept(acc, recvd_acc);
-
-                    if (check_accept(acc))
-                    {
-                        logger(0, LOG_LEVEL, MY_SERVER_ID,
-                               "Received accept has conflicts\n");
-                        break;
-                    }
-
-                    received_accept(acc);
-                    free(recvd_acc);
-
-                    break;
-
-                // received globally ordered update
-                case Globally_Ordered_Update_Type:
-                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received globally ordered update\n");
-
-                    unsigned char *recvd_update = malloc(header->size);
-                    Globally_Ordered_Update *update = malloc(sizeof(Globally_Ordered_Update));
-
-                    if ((nbytes = recvfrom(listener, recvd_update, header->size, 0,
-                                           (struct sockaddr *)&their_addr, &addrlen)) != header->size)
-                    {
-                        logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                               nbytes, header->size);
-                        exit(1);
-                    }
-                    unpack_global_ordered(update, recvd_update);
-
-                    // ??? No conflict check for globally ordered update?
-
-                    apply_globally_ordered_update(update);
-                    free(recvd_update);
-
+                // conflict checks return true if there is a conflict
+                if (check_view_change(v))
+                {
+                    logger(0, LOG_LEVEL, MY_SERVER_ID,
+                            "Received view change has conflicts\n");
                     break;
                 }
 
-                free(recvd_header);
-                free(header);
+                received_view_change(v);
+                free(recvd_vc);
+
+                break;
+
+            // received vc proof
+            case VC_Proof_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received vc proof\n");
+
+                unsigned char *recvd_proof = malloc(header->size);
+                VC_Proof *proof = malloc(sizeof(VC_Proof));
+
+                if ((nbytes = recvfrom(listener, recvd_proof, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_vc_proof(proof, recvd_proof);
+
+                //conflict checks
+                if (check_vc_proof(proof))
+                {
+                    logger(0, LOG_LEVEL, MY_SERVER_ID,
+                            "Received vc proof has conflicts\n");
+                    break;
+                }
+
+                received_vc_proof(proof);
+                free(recvd_proof);
+
+                break;
+
+            // received prepare
+            case Prepare_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare\n");
+
+                unsigned char *recvd_prep = malloc(header->size);
+                Prepare *prep = malloc(sizeof(Prepare));
+
+                if ((nbytes = recvfrom(listener, recvd_prep, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_prepare(prep, recvd_prep);
+
+                if (check_prepare(prep))
+                {
+                    logger(0, LOG_LEVEL, MY_SERVER_ID,
+                            "Received prepare has conflicts\n");
+                    break;
+                }
+
+                received_prepare(prep);
+                free(recvd_prep);
+
+                break;
+
+            // received prepare ok
+            case Prepare_OK_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare ok\n");
+
+                unsigned char *recvd_ok = malloc(header->size);
+                Prepare_OK *ok = malloc(sizeof(Prepare_OK));
+
+                if ((nbytes = recvfrom(listener, recvd_ok, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_prepare_ok(ok, recvd_ok);
+
+                if (check_prepare_ok(ok))
+                {
+                    logger(0, LOG_LEVEL, MY_SERVER_ID,
+                            "Received prepare ok has conflicts\n");
+                    break;
+                }
+
+                received_prepare_ok(ok);
+                free(recvd_ok);
+
+                break;
+
+            // received proposal
+            case Proposal_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received proposal\n");
+
+                unsigned char *recvd_prop = malloc(header->size);
+                Proposal *prop = malloc(sizeof(Proposal));
+
+                if ((nbytes = recvfrom(listener, recvd_prop, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_proposal(prop, recvd_prop);
+
+                if (check_proposal(prop))
+                {
+                    logger(0, LOG_LEVEL, MY_SERVER_ID,
+                            "Received proposal has conflicts\n");
+                    break;
+                }
+
+                received_proposal(prop);
+                free(recvd_prop);
+
+                break;
+
+            // received accept
+            case Accept_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received accept\n");
+
+                unsigned char *recvd_acc = malloc(header->size);
+                Accept *acc = malloc(sizeof(Accept));
+
+                if ((nbytes = recvfrom(listener, recvd_acc, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_accept(acc, recvd_acc);
+
+                if (check_accept(acc))
+                {
+                    logger(0, LOG_LEVEL, MY_SERVER_ID,
+                            "Received accept has conflicts\n");
+                    break;
+                }
+
+                received_accept(acc);
+                free(recvd_acc);
+
+                break;
+
+            // received globally ordered update
+            case Globally_Ordered_Update_Type:
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Received globally ordered update\n");
+
+                unsigned char *recvd_update = malloc(header->size);
+                Globally_Ordered_Update *update = malloc(sizeof(Globally_Ordered_Update));
+
+                if ((nbytes = recvfrom(listener, recvd_update, header->size, 0,
+                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                {
+                    logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
+                            nbytes, header->size);
+                    exit(1);
+                }
+                unpack_global_ordered(update, recvd_update);
+
+                // ??? No conflict check for globally ordered update?
+
+                apply_globally_ordered_update(update);
+                free(recvd_update);
+
+                break;
             }
+
+            free(recvd_header);
+            free(header);
         }
     }
 }

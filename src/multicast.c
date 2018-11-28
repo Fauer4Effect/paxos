@@ -21,7 +21,7 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
         int rv;
         // Do we want to resend the message if it doesn't send completely?
         // don't want to clog up the network
-        // int numbytes;
+        int numbytes;
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
@@ -44,8 +44,16 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
             exit(1);
         }
 
-        sendto(sockfd, header_buf, header_size, 0, p->ai_addr, p->ai_addrlen);
-        sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
+        numbytes = 0;
+        while (numbytes < header_size)
+        {
+            numbytes = sendto(sockfd, header_buf, header_size, 0, p->ai_addr, p->ai_addrlen);
+        }
+        numbytes = 0;
+        while (numbytes < msg_size)
+        {
+            sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
+        }
 
         freeaddrinfo(servinfo);
         close(sockfd);
