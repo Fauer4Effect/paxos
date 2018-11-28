@@ -333,6 +333,7 @@ int main(int argc, char *argv[])
 
             struct sockaddr_storage their_addr;
             socklen_t addrlen = sizeof(their_addr);
+            int nbytes;
 
             if ((nbytes = recvfrom(listener, recvd_header, sizeof(Header), 0,
                                     (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))

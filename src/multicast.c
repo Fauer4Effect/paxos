@@ -52,7 +52,7 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
         numbytes = 0;
         while (numbytes < msg_size)
         {
-            sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
+            numbytes = sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
         }
 
         freeaddrinfo(servinfo);
