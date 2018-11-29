@@ -205,11 +205,11 @@ int bind_socket()
     int rv;
     int sockfd;
     int yes = 1;
-    
+
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;        // ipv4 or ipv6
     hints.ai_socktype = SOCK_DGRAM;     // UPD
-    hints.ai_flags = AI_PASSIVE;        
+    hints.ai_flags = AI_PASSIVE;
 
     if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
     {
@@ -224,7 +224,7 @@ int bind_socket()
         {
             continue;
         }
-        
+
         // prevent "address already in use"
         setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
 
@@ -292,7 +292,10 @@ int main(int argc, char *argv[])
             gettimeofday(&cur_time, NULL);
             if ((cur_time.tv_sec - PROGRESS_TIMER.tv_sec) > PROGRESS_TIMEOUT)
             {
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "Curtime %d progress timer %d\n",
+                       cur_time.tv_sec, PROGRESS_TIMER.tv_sec);
                 logger(0, LOG_LEVEL, MY_SERVER_ID, "Progress timer expired\n");
+                PROGRESS_TIMER_SET = false;
                 shift_to_leader_election(LAST_ATTEMPTED + 1);
             }
         }
@@ -302,7 +305,7 @@ int main(int argc, char *argv[])
         logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking update timers\n");
         int j;
         for (j = 0; j < MAX_CLIENT_ID; j++)
-        {    
+        {
             if (UPDATE_TIMER[j] == 0)
             {
                 continue;

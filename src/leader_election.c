@@ -24,7 +24,7 @@ bool preinstall_ready(int view)
 void shift_to_leader_election(int view)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Shift to leader election\n");
-    
+
     int i;
     for (i = 0; i < NUM_PEERS; i++)
     {
@@ -85,8 +85,11 @@ void received_view_change(View_Change *v)
         if (preinstall_ready(v->attempted))
         {
             PROGRESS_TIMEOUT *= 2;
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "New Progress timeout %d\n", PROGRESS_TIMEOUT);
             // set the progress timer
             gettimeofday(&PROGRESS_TIMER, NULL);
+            PROGRESS_TIMER_SET = true;
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "Set Progress timer\n");
             // if leader of LAST_ATTEMPTED
             if ((LAST_ATTEMPTED % NUM_PEERS) == MY_SERVER_ID)
             {

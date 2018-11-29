@@ -65,8 +65,8 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
           exit(1);
         }
 
-        strncpy(full_send, header_buf, header_size);
-        strncat(full_send, msg_buf, msg_size);
+        memcpy(full_send, header_buf, header_size);
+        memcpy(full_send+header_size, msg_buf, msg_size);
         logger(0, LOG_LEVEL, MY_SERVER_ID, "Concatenated both bufs, sending as one\n");
 
         sendto(sockfd, full_send, header_size + msg_size, 0, p->ai_addr, p->ai_addrlen);
@@ -116,8 +116,8 @@ void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
       exit(1);
     }
 
-    strncpy(full_send, header_buf, header_size);
-    strncat(full_send, msg_buf, msg_size);
+    memcpy(full_send, header_buf, header_size);
+    memcpy(full_send+header_size, msg_buf, msg_size);
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Concatenated both bufs, sending as one\n");
 
     sendto(sockfd, full_send, header_size + msg_size, 0, p->ai_addr, p->ai_addrlen);
