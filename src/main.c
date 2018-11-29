@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
 
         // check is update timers have expired
         // ??? Is there somewhere else this could be happening?
-        logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking update timers\n");
+        // logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking update timers\n");
         int j;
         for (j = 0; j < MAX_CLIENT_ID; j++)
         {
