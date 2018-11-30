@@ -16,6 +16,11 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
     int i;
     for (i = 0; i < NUM_PEERS; i++)
     {
+        // don't want to multiast to ourself.
+        if (i+1 == MY_SERVER_ID)
+        {
+            continue;
+        }
         int sockfd;
         struct addrinfo hints, *servinfo, *p;
         int rv;

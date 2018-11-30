@@ -102,7 +102,15 @@ void initialize_globals()
     GLOBAL_HISTORY = malloc(sizeof(Global_Slot *) * MAX_CLIENT_ID);
     memset(GLOBAL_HISTORY, 0, sizeof(Global_Slot *) * MAX_CLIENT_ID);
 
-    PROGRESS_TIMER_SET = true;
+    // so we don't have everyone broadcasting the same view and causing conflicts
+    if (MY_SERVER_ID == 1)
+    {
+        PROGRESS_TIMER_SET = true;
+    }
+    else
+    {
+        PROGRESS_TIMER_SET = false;
+    }
     PROGRESS_TIMEOUT = 2; // how about setting to 2 sec for first timeout
     UPDATE_TIMEOUT = 2;
 

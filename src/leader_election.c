@@ -70,6 +70,10 @@ void shift_to_leader_election(int view)
 
     // Apply vc to data structures? Just update VC[]?
     apply_view_change(vc);
+
+    // reset the progress time so that it will resend if there's a timeout
+    gettimeofday(&PROGRESS_TIMER, NULL);
+    PROGRESS_TIMER_SET = true;
 }
 
 void received_view_change(View_Change *v)
