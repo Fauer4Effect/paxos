@@ -106,7 +106,8 @@ void apply_prepare_ok(Prepare_OK *msg)
     node_t *datalist = msg->data_list;
     while (1)
     {
-        if (datalist == NULL)
+        //if (datalist == NULL)
+        if (datalist->data == NULL)
         {
             break;
         }
