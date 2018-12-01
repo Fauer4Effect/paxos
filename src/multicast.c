@@ -96,7 +96,7 @@ void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
 
-    if ((rv = getaddrinfo(PEERS[server_id], PORT, &hints, &servinfo)) != 0)
+    if ((rv = getaddrinfo(PEERS[server_id-1], PORT, &hints, &servinfo)) != 0)
     {
         logger(1, LOG_LEVEL, MY_SERVER_ID, "getaddrinfo: %s\n", gai_strerror(rv));
     }
@@ -109,25 +109,25 @@ void send_to_single_host(unsigned char *header_buf, uint32_t header_size,
     }
     if (p == NULL)
     {
-        logger(1, LOG_LEVEL, MY_SERVER_ID, "Failed to connect to %s\n", PEERS[server_id]);
+        logger(1, LOG_LEVEL, MY_SERVER_ID, "Failed to connect to %s\n", PEERS[server_id-1]);
         exit(1);
     }
 
-    // sendto(sockfd, header_buf, header_size, 0, p->ai_addr, p->ai_addrlen);
-    // sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
+    sendto(sockfd, header_buf, header_size, 0, p->ai_addr, p->ai_addrlen);
+    sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
 
-    unsigned char *full_send = malloc(header_size + msg_size);
-    if (full_send == NULL)
-    {
-      logger(1, LOG_LEVEL, MY_SERVER_ID, "Malloc failed\n");
-      exit(1);
-    }
+    // unsigned char *full_send = malloc(header_size + msg_size);
+    // if (full_send == NULL)
+    // {
+    //   logger(1, LOG_LEVEL, MY_SERVER_ID, "Malloc failed\n");
+    //   exit(1);
+    // }
 
-    memcpy(full_send, header_buf, header_size);
-    memcpy(full_send+header_size, msg_buf, msg_size);
-    logger(0, LOG_LEVEL, MY_SERVER_ID, "Concatenated both bufs, sending as one\n");
+    // memcpy(full_send, header_buf, header_size);
+    // memcpy(full_send+header_size, msg_buf, msg_size);
+    // logger(0, LOG_LEVEL, MY_SERVER_ID, "Concatenated both bufs, sending as one\n");
 
-    sendto(sockfd, full_send, header_size + msg_size, 0, p->ai_addr, p->ai_addrlen);
+    // sendto(sockfd, full_send, header_size + msg_size, 0, p->ai_addr, p->ai_addrlen);
 
     freeaddrinfo(servinfo);
     close(sockfd);
