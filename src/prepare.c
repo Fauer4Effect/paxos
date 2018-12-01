@@ -41,11 +41,15 @@ node_t *construct_datalist(int aru)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Constructing datalist\n");
     node_t *datalist = malloc(sizeof(node_t));
+    datalist->data = NULL;
+    datalist->next = NULL;
+    datalist->data_type = 0;
     int i;
     for (i = aru + 1; i < MAX_CLIENT_ID; i++)
     {
         if (GLOBAL_HISTORY[i] == 0)
         {
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "nothign to put in datalist\n");
             continue;
         }
         if (GLOBAL_HISTORY[i]->global_ordered_update != 0)
