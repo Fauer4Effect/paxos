@@ -111,8 +111,8 @@ void initialize_globals()
     {
         PROGRESS_TIMER_SET = false;
     }
-    PROGRESS_TIMEOUT = 2; // how about setting to 2 sec for first timeout
-    UPDATE_TIMEOUT = 2;
+    PROGRESS_TIMEOUT = 5; // how about setting to 2 sec for first timeout
+    UPDATE_TIMEOUT = 5;
 
     UPDATE_TIMER = malloc(sizeof(uint32_t) * MAX_CLIENT_ID);
     memset(UPDATE_TIMER, 0, sizeof(uint32_t) * MAX_CLIENT_ID);
@@ -487,6 +487,10 @@ int main(int argc, char *argv[])
                     exit(1);
                 }
                 unpack_prepare_ok(ok, recvd_ok);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\tPrepare ok\n");
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\tserver id: %d\n", ok->server_id);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\tview: %d\n", ok->view);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\tdata list 1 type: %d\n", ok->data_list->data_type);
 
                 if (check_prepare_ok(ok))
                 {

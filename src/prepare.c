@@ -159,6 +159,10 @@ void received_prepare(Prepare *prepare)
 
     unsigned char *prepare_ok_buf = malloc(header->size);
     pack_prepare_ok(prepare_ok, prepare_ok_buf);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "\tsending prepare ok\n");
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\t server id: %d\n", prepare_ok->server_id);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\tview: %d\n", prepare_ok->view);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\t datalist 1 data type: %d\n", prepare_ok->data_list->data_type);
     send_to_single_host(header_buf, sizeof(Header), prepare_ok_buf, header->size, leader_id);
 
     free(prepare_ok_buf);

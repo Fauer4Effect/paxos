@@ -165,6 +165,7 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
 
     int datalist_size = list_length(msg->data_list);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Data list size is %d\n", datalist_size);
     packi32(buf, datalist_size);
     buf += 4;
 
@@ -201,8 +202,12 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     buf += 4;
 
     node_t *datalist = malloc(sizeof(node_t));
+    datalist->data = NULL;
+    datalist->next = NULL;
+    datalist->data_type = 0;
 
     int datalist_size = unpacki32(buf);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received data list size %d\n", datalist_size);
     buf += 4;
 
     int index = 0;
