@@ -16,7 +16,10 @@ int datalist_storage_reqs(node_t *datalist)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Computing datalist storage reqs\n");
     int size = 0;
+    if (datalist == NULL)
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "Data list is null\n");
     int num_nodes = list_length(datalist);
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Got list length\n");
     int i;
     for (i = 0; i < num_nodes; i++)
     {
