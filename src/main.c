@@ -329,6 +329,8 @@ int main(int argc, char *argv[])
         FD_ZERO(&readfds);
         FD_SET(listener, &readfds);
         int select_ret;
+        tv.tv_sec = 2;
+        tv.tv_usec = 0;
         if ((select_ret = select(listener+1, &readfds, NULL, NULL, &tv)) == -1)
         {
             logger(1, LOG_LEVEL, MY_SERVER_ID, "Call to select failed\n");
@@ -396,6 +398,9 @@ int main(int argc, char *argv[])
                     exit(1);
                 }
                 unpack_view_change(v, recvd_vc);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "View Change\n");
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\tServer id: %d\n", v->server_id);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\tattempted: %d\n", v->attempted);
 
                 // conflict checks return true if there is a conflict
                 if (check_view_change(v))

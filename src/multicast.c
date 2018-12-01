@@ -49,20 +49,21 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
             exit(1);
         }
 
-        // numbytes = 0;
-        // while (numbytes < header_size)
-        // {
-        //     numbytes = sendto(sockfd, header_buf, header_size, 0, p->ai_addr, p->ai_addrlen);
-        // }
-        // numbytes = 0;
-        // while (numbytes < msg_size)
-        // {
-        //     numbytes = sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
-        // }
+        numbytes = 0;
+        while (numbytes < header_size)
+        {
+            numbytes = sendto(sockfd, header_buf, header_size, 0, p->ai_addr, p->ai_addrlen);
+        }
+        numbytes = 0;
+        while (numbytes < msg_size)
+        {
+            numbytes = sendto(sockfd, msg_buf, msg_size, 0, p->ai_addr, p->ai_addrlen);
+        }
 
         // because we are using udp we need to send the header and the message
         // in the same send else they can get uncoupled from each other
 
+        /*
         unsigned char *full_send = malloc(header_size + msg_size);
         if (full_send == NULL)
         {
@@ -74,8 +75,9 @@ void multicast(unsigned char *header_buf, uint32_t header_size,
         memcpy(full_send+header_size, msg_buf, msg_size);
         logger(0, LOG_LEVEL, MY_SERVER_ID, "Concatenated both bufs, sending as one\n");
 
-        sendto(sockfd, full_send, header_size + msg_size, 0, p->ai_addr, p->ai_addrlen);
-
+        numbytes = sendto(sockfd, full_send, header_size + msg_size, 0, p->ai_addr, p->ai_addrlen);
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "Sent %d bytes\n", numbytes);
+        */
         freeaddrinfo(servinfo);
         close(sockfd);
     }
