@@ -9,10 +9,15 @@
 
 bool preinstall_ready(int view)
 {
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Checking preinstall\n");
     int i;
     int count;
     for (i = 0; i < NUM_PEERS; i++)
     {
+        if (VC[i] == 0)
+        {
+            continue;
+        }
         if (VC[i]->attempted == view)
             count++;
     }
@@ -69,6 +74,7 @@ void shift_to_leader_election(int view)
     free(vc_buf);
 
     // Apply vc to data structures? Just update VC[]?
+    logger(0, LOG_LEVEL, MY_SERVER_ID, "Shift to leader election apply\n");
     apply_view_change(vc);
 
     // reset the progress time so that it will resend if there's a timeout

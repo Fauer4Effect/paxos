@@ -398,9 +398,9 @@ int main(int argc, char *argv[])
                     exit(1);
                 }
                 unpack_view_change(v, recvd_vc);
-                logger(0, LOG_LEVEL, MY_SERVER_ID, "View Change\n");
-                logger(0, LOG_LEVEL, MY_SERVER_ID, "\tServer id: %d\n", v->server_id);
-                logger(0, LOG_LEVEL, MY_SERVER_ID, "\tattempted: %d\n", v->attempted);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\tView Change\n");
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\tServer id: %d\n", v->server_id);
+                logger(0, LOG_LEVEL, MY_SERVER_ID, "\t\tattempted: %d\n", v->attempted);
 
                 // conflict checks return true if there is a conflict
                 if (check_view_change(v))
