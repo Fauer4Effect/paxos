@@ -78,9 +78,9 @@ void shift_to_leader_election(int view)
     apply_view_change(vc);
 
     // reset the progress time so that it will resend if there's a timeout
-    gettimeofday(&PROGRESS_TIMER, NULL);
-    PROGRESS_TIMER.tv_sec++;
-    PROGRESS_TIMER_SET = true;
+    //gettimeofday(&PROGRESS_TIMER, NULL);
+    //PROGRESS_TIMER.tv_sec++;
+    //PROGRESS_TIMER_SET = true;
 }
 
 void received_view_change(View_Change *v)
