@@ -72,6 +72,8 @@ bool view_prepared_ready(int view)
     int count;
     for (i = 0; i < NUM_PEERS; i++)
     {
+        if (PREPARE_OKS[i] == 0)
+            continue;
         if (PREPARE_OKS[i]->view == view)
             count++;
     }
