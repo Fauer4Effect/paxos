@@ -24,7 +24,7 @@
 #include "serialize.h"
 #include "update_globals.h"
 
-int LOG_LEVEL = DEBUG; // set log level to debug for logging
+int LOG_LEVEL = DEBUG;  // set log level to debug for logging
 int MAX_CLIENT_ID = 32; // size of arrays that are indexed by client id
                         // updated by increase_array_size()
 
@@ -35,7 +35,6 @@ int REG_NONLEADER = 3;
 // XXX We use theses for the demonstration when we want to send a client update
 bool TESTING = false;
 bool TEST_UPDATE_READY = false;
-
 
 // TODO Need to have a data structure probably so that you can tell when a client update
 // has been bound to a specific sequence number
@@ -55,33 +54,33 @@ View_Change **VC;   // array of View_Change messages, indexed by server_id
                     // size of NUM_PEERS
 
 // prepare phase variables
-Prepare *PREPARED;      // the Prepare message from last preinstalled view, if any
-Prepare_OK **PREPARE_OKS;  // array of Prepare_OK messages received, indexed by serv id
-                        // size of NUM_PEERS
+Prepare *PREPARED;        // the Prepare message from last preinstalled view, if any
+Prepare_OK **PREPARE_OKS; // array of Prepare_OK messages received, indexed by serv id
+                          // size of NUM_PEERS
 
 // global ordering variables
-int LOCAL_ARU;                 // local aru value of this server
-int LAST_PROPOSED;             // last sequence number proposed by the leader
-Global_Slot **GLOBAL_HISTORY;  // array of global_slots indexed by sequence number
-                               // size is dynamic by increase_array_size()
-                               // defined in data_structures.h
+int LOCAL_ARU;                // local aru value of this server
+int LAST_PROPOSED;            // last sequence number proposed by the leader
+Global_Slot **GLOBAL_HISTORY; // array of global_slots indexed by sequence number
+                              // size is dynamic by increase_array_size()
+                              // defined in data_structures.h
 
 // timer variables
 struct timeval PROGRESS_TIMER; // timeout on making global progress
 bool PROGRESS_TIMER_SET;       // keep track of whether the progress time was set
 uint32_t PROGRESS_TIMEOUT;     // how long to wait until PROGRESS_TIMER is timed out
-uint32_t *UPDATE_TIMER;       // array of timeouts, indexed by client id
+uint32_t *UPDATE_TIMER;        // array of timeouts, indexed by client id
                                // dynamic size by increase_array_size()
 uint32_t UPDATE_TIMEOUT;       // how long to wait until UPDATE_TIMER is timed out
 
 // client handling variables
-node_t *UPDATE_QUEUE;             // queue of Client_Update messages
-uint32_t *LAST_EXECUTED;          // array of timestamps, indexed by client_id
-uint32_t *LAST_ENQUEUED;          // array of timestamps, indexed by client_id
-                                  // stores tv_sec field in struct timeval
-                                  // dynamic size
-Client_Update **PENDING_UPDATES;  // array of Client_Update messages, indexed by client_id
-                                  // dynamic size
+node_t *UPDATE_QUEUE;            // queue of Client_Update messages
+uint32_t *LAST_EXECUTED;         // array of timestamps, indexed by client_id
+uint32_t *LAST_ENQUEUED;         // array of timestamps, indexed by client_id
+                                 // stores tv_sec field in struct timeval
+                                 // dynamic size
+Client_Update **PENDING_UPDATES; // array of Client_Update messages, indexed by client_id
+                                 // dynamic size
 
 Global_Slot *new_global_slot()
 {
@@ -237,8 +236,8 @@ int bind_socket()
     int yes = 1;
 
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;        // ipv4 or ipv6
-    hints.ai_socktype = SOCK_DGRAM;     // UPD
+    hints.ai_family = AF_UNSPEC;    // ipv4 or ipv6
+    hints.ai_socktype = SOCK_DGRAM; // UPD
     hints.ai_flags = AI_PASSIVE;
 
     if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
@@ -314,7 +313,7 @@ int main(int argc, char *argv[])
     initialize_globals();
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Globals initialized\n");
 
-    struct timeval cur_time;    // for checking if timers have expired
+    struct timeval cur_time; // for checking if timers have expired
     fd_set readfds;
     struct timeval tv;
     tv.tv_sec = 2;
@@ -341,13 +340,13 @@ int main(int argc, char *argv[])
             pack_header(head, head_buf);
 
             send_to_single_host(head_buf, sizeof(Header), update_buf, sizeof(Client_Update), 1);
-            
+
             free(head_buf);
             free(head);
             free(update_buf);
             free(u);
 
-            TEST_UPDATE_READY = false;
+            TESTING = false;
         }
 
         // if Progress timer has expired
@@ -388,7 +387,7 @@ int main(int argc, char *argv[])
         int select_ret;
         tv.tv_sec = 2;
         tv.tv_usec = 0;
-        if ((select_ret = select(listener+1, &readfds, NULL, NULL, &tv)) == -1)
+        if ((select_ret = select(listener + 1, &readfds, NULL, NULL, &tv)) == -1)
         {
             logger(1, LOG_LEVEL, MY_SERVER_ID, "Call to select failed\n");
             exit(1);
@@ -406,7 +405,7 @@ int main(int argc, char *argv[])
             int nbytes;
 
             if ((nbytes = recvfrom(listener, recvd_header, sizeof(Header), 0,
-                                    (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))
+                                   (struct sockaddr *)&their_addr, &addrlen)) != sizeof(Header))
             {
                 logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d not %d\n", nbytes, sizeof(Header));
                 exit(1);
@@ -425,15 +424,13 @@ int main(int argc, char *argv[])
                 Client_Update *cupdate = malloc(sizeof(Client_Update));
 
                 if ((nbytes = recvfrom(listener, recvd_cupdate, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_client_update(cupdate, recvd_cupdate);
-
-                // ??? No conflict check for client updates?
 
                 client_update_handler(cupdate);
                 free(recvd_cupdate);
@@ -448,10 +445,10 @@ int main(int argc, char *argv[])
                 View_Change *v = malloc(sizeof(View_Change));
 
                 if ((nbytes = recvfrom(listener, recvd_vc, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_view_change(v, recvd_vc);
@@ -462,8 +459,7 @@ int main(int argc, char *argv[])
                 // conflict checks return true if there is a conflict
                 if (check_view_change(v))
                 {
-                    logger(0, LOG_LEVEL, MY_SERVER_ID,
-                            "Received view change has conflicts\n");
+                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received view change has conflicts\n");
                     break;
                 }
 
@@ -480,10 +476,10 @@ int main(int argc, char *argv[])
                 VC_Proof *proof = malloc(sizeof(VC_Proof));
 
                 if ((nbytes = recvfrom(listener, recvd_proof, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_vc_proof(proof, recvd_proof);
@@ -491,8 +487,7 @@ int main(int argc, char *argv[])
                 //conflict checks
                 if (check_vc_proof(proof))
                 {
-                    logger(0, LOG_LEVEL, MY_SERVER_ID,
-                            "Received vc proof has conflicts\n");
+                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received vc proof has conflicts\n");
                     break;
                 }
 
@@ -509,18 +504,17 @@ int main(int argc, char *argv[])
                 Prepare *prep = malloc(sizeof(Prepare));
 
                 if ((nbytes = recvfrom(listener, recvd_prep, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_prepare(prep, recvd_prep);
 
                 if (check_prepare(prep))
                 {
-                    logger(0, LOG_LEVEL, MY_SERVER_ID,
-                            "Received prepare has conflicts\n");
+                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare has conflicts\n");
                     break;
                 }
 
@@ -537,10 +531,10 @@ int main(int argc, char *argv[])
                 Prepare_OK *ok = malloc(sizeof(Prepare_OK));
 
                 if ((nbytes = recvfrom(listener, recvd_ok, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_prepare_ok(ok, recvd_ok);
@@ -551,8 +545,7 @@ int main(int argc, char *argv[])
 
                 if (check_prepare_ok(ok))
                 {
-                    logger(0, LOG_LEVEL, MY_SERVER_ID,
-                            "Received prepare ok has conflicts\n");
+                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received prepare ok has conflicts\n");
                     break;
                 }
 
@@ -569,18 +562,17 @@ int main(int argc, char *argv[])
                 Proposal *prop = malloc(sizeof(Proposal));
 
                 if ((nbytes = recvfrom(listener, recvd_prop, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_proposal(prop, recvd_prop);
 
                 if (check_proposal(prop))
                 {
-                    logger(0, LOG_LEVEL, MY_SERVER_ID,
-                            "Received proposal has conflicts\n");
+                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received proposal has conflicts\n");
                     break;
                 }
 
@@ -597,18 +589,17 @@ int main(int argc, char *argv[])
                 Accept *acc = malloc(sizeof(Accept));
 
                 if ((nbytes = recvfrom(listener, recvd_acc, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_accept(acc, recvd_acc);
 
                 if (check_accept(acc))
                 {
-                    logger(0, LOG_LEVEL, MY_SERVER_ID,
-                            "Received accept has conflicts\n");
+                    logger(0, LOG_LEVEL, MY_SERVER_ID, "Received accept has conflicts\n");
                     break;
                 }
 
@@ -625,10 +616,10 @@ int main(int argc, char *argv[])
                 Globally_Ordered_Update *update = malloc(sizeof(Globally_Ordered_Update));
 
                 if ((nbytes = recvfrom(listener, recvd_update, header->size, 0,
-                                        (struct sockaddr *)&their_addr, &addrlen)) != header->size)
+                                       (struct sockaddr *)&their_addr, &addrlen)) != header->size)
                 {
                     logger(1, LOG_LEVEL, MY_SERVER_ID, "Received %d bytes not %d\n",
-                            nbytes, header->size);
+                           nbytes, header->size);
                     exit(1);
                 }
                 unpack_global_ordered(update, recvd_update);

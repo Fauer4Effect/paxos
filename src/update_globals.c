@@ -79,16 +79,9 @@ bool check_accept(Accept *msg)
 void apply_view_change(View_Change *msg)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Applying view change\n");
-    // logger(0, LOG_LEVEL, MY_SERVER_ID, "VC[%d] = %d\n", (msg->server_id)-1, VC[(msg->server_id)-1]);
-    // if (VC[msg->server_id] != 0)
-    if (VC[(msg->server_id)-1] != 0)
-    {
-        // logger(0, LOG_LEVEL, MY_SERVER_ID, "VC[msg->server_id] already set\n");
+    if (VC[(msg->server_id) - 1] != 0)
         return;
-    }
-    // VC[msg->server_id] = msg;
-    VC[(msg->server_id)-1] = msg;
-    // logger(0, LOG_LEVEL, MY_SERVER_ID, "VC[%d] = %d\n", (msg->server_id)-1, VC[(msg->server_id)-1]);
+    VC[(msg->server_id) - 1] = msg;
 }
 
 void apply_prepare(Prepare *msg)
@@ -107,11 +100,8 @@ void apply_prepare_ok(Prepare_OK *msg)
     node_t *datalist = msg->data_list;
     while (1)
     {
-        //if (datalist == NULL)
         if (datalist->data == NULL)
-        {
             break;
-        }
         if (datalist->data_type == Proposal_Type)
         {
             apply_proposal(datalist->data);

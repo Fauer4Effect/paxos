@@ -110,6 +110,7 @@ void received_view_change(View_Change *v)
     }
 }
 
+// XXX Don't really think there's anywhere that we send this VC Proof
 void received_vc_proof(VC_Proof *v)
 {
     if (v->installed > LAST_INSTALLED)

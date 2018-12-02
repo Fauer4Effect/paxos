@@ -1,7 +1,6 @@
 #ifndef _LOGGINGH_
 #define _LOGGINGH_
 
-
 #define DEBUG 0
 #define INFO 1
 #define SILENT 2

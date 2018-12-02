@@ -11,7 +11,7 @@
 void client_update_handler(Client_Update *u)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "In client update handler\n");
-    
+
     if (STATE == LEADER_ELECTION)
     {
         logger(0, LOG_LEVEL, MY_SERVER_ID, "State: LEADER ELECTION\n");

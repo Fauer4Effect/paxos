@@ -8,16 +8,16 @@ int list_length(node_t *list)
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Getting list length\n");
     if (list->data == NULL)
         return 0;
-    logger(0, LOG_LEVEL, MY_SERVER_ID, "Current node: %p\n", list);
+    // logger(0, LOG_LEVEL, MY_SERVER_ID, "Current node: %p\n", list);
     int length = 1;
     while (list->next != NULL)
     {
-        logger(0, LOG_LEVEL, MY_SERVER_ID, "Has next node\n");
+        // logger(0, LOG_LEVEL, MY_SERVER_ID, "Has next node\n");
         length++;
-        logger(0, LOG_LEVEL, MY_SERVER_ID, "Next node: %p\n", list->next);
+        // logger(0, LOG_LEVEL, MY_SERVER_ID, "Next node: %p\n", list->next);
         list = list->next;
     }
-    logger(0, LOG_LEVEL, MY_SERVER_ID, "Found lenght: %d\n", length);
+    // logger(0, LOG_LEVEL, MY_SERVER_ID, "Found lenght: %d\n", length);
     return length;
 }
 

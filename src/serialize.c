@@ -178,7 +178,7 @@ void pack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     {
         // each node has void *data, node *next, uint32_t data_type
         packi32(buf, datalist->data_type);
-        buf += 4; 
+        buf += 4;
         if (datalist->data_type == Globally_Ordered_Update_Type)
         {
             pack_global_ordered(datalist->data, buf);
@@ -239,7 +239,6 @@ void unpack_prepare_ok(Prepare_OK *msg, unsigned char *buf)
     msg->data_list = datalist;
 }
 
-
 void pack_accept(Accept *msg, unsigned char *buf)
 {
     packi32(buf, msg->server_id);
@@ -257,5 +256,3 @@ void unpack_accept(Accept *msg, unsigned char *buf)
     buf += 4;
     msg->seq = unpacki32(buf);
 }
-
-

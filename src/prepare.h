@@ -1,7 +1,6 @@
 #ifndef _PREPAREH_
 #define _PREPAREH_
 
-
 #include "messages.h"
 #include "update_globals.h"
 

@@ -16,10 +16,7 @@ int datalist_storage_reqs(node_t *datalist)
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Computing datalist storage reqs\n");
     int size = 0;
-    if (datalist == NULL)
-        logger(0, LOG_LEVEL, MY_SERVER_ID, "Data list is null\n");
     int num_nodes = list_length(datalist);
-    logger(0, LOG_LEVEL, MY_SERVER_ID, "Got list length\n");
     int i;
     for (i = 0; i < num_nodes; i++)
     {
@@ -49,7 +46,7 @@ node_t *construct_datalist(int aru)
     {
         if (GLOBAL_HISTORY[i] == 0)
         {
-            logger(0, LOG_LEVEL, MY_SERVER_ID, "nothign to put in datalist\n");
+            logger(0, LOG_LEVEL, MY_SERVER_ID, "Nothing to put in datalist\n");
             continue;
         }
         if (GLOBAL_HISTORY[i]->global_ordered_update != 0)
