@@ -346,6 +346,8 @@ int main(int argc, char *argv[])
             free(head);
             free(update_buf);
             free(u);
+
+            TEST_UPDATE_READY = false;
         }
 
         // if Progress timer has expired

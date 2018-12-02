@@ -134,12 +134,15 @@ void send_proposal()
     p->seq = seq;
     p->update = u;
 
+    apply_proposal(p);
+    LAST_PROPOSED = seq;
+
+    // XXX SYNC TO DISK
+
     // size of proposal is uint32_t * 3 + storage for client update
     // client update is uin32_t * 4
     unsigned char *prop_buf = malloc(sizeof(uint32_t) * 7);
     pack_proposal(p, prop_buf);
-
-    // XXX SYNC TO DISK
 
     Header *head = malloc(sizeof(Header));
     head->msg_type = Proposal_Type;
