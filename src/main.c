@@ -32,6 +32,10 @@ int LEADER_ELECTION = 1;
 int REG_LEADER = 2;
 int REG_NONLEADER = 3;
 
+// XXX We use theses for the demonstration when we want to send a client update
+bool TESTING = false;
+bool TEST_UPDATE_READY = false;
+
 
 // TODO Need to have a data structure probably so that you can tell when a client update
 // has been bound to a specific sequence number
@@ -119,7 +123,8 @@ void initialize_globals()
         GLOBAL_HISTORY[i] = new_global_slot();
     }
 
-    // so we don't have everyone broadcasting the same view and causing conflicts
+    // XXX so we don't have everyone broadcasting the same view and causing conflicts
+    // this is kind of hacky and probably means something not quite right with conflict checks
     if (MY_SERVER_ID == 1)
     {
         PROGRESS_TIMER_SET = true;
@@ -293,6 +298,14 @@ int main(int argc, char *argv[])
         PEERS = open_parse_hostfile(argv[4]);
     }
 
+    if (argc == 6)
+    {
+        if (strcmp(argv[5], "-t") == 0)
+        {
+            TESTING = true;
+        }
+    }
+
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Command line parsed\n");
 
     int listener = bind_socket();
@@ -309,6 +322,31 @@ int main(int argc, char *argv[])
 
     for (;;)
     {
+        // XXX for demonstration leader sends client update to self
+        if (TESTING && TEST_UPDATE_READY)
+        {
+            Client_Update *u = malloc(sizeof(Client_Update));
+            u->client_id = 1;
+            u->server_id = MY_SERVER_ID;
+            u->timestamp = 1;
+            u->update = 1;
+
+            unsigned char *update_buf = malloc(sizeof(Client_Update));
+            pack_client_update(u, update_buf);
+
+            Header *head = malloc(sizeof(Header));
+            head->msg_type = Client_Update_Type;
+            head->size = sizeof(Client_Update);
+            unsigned char *head_buf = malloc(sizeof(Header));
+            pack_header(head, head_buf);
+
+            send_to_single_host(head_buf, sizeof(Header), update_buf, sizeof(Client_Update), 1);
+            
+            free(head_buf);
+            free(head);
+            free(update_buf);
+            free(u);
+        }
 
         // if Progress timer has expired
         if (PROGRESS_TIMER_SET)

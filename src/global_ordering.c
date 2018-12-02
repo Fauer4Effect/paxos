@@ -71,7 +71,7 @@ void executed_client_update(Client_Update *u)
     {
         // XXX Reply to client
         // logger(1, LOG_LEVEL, MY_SERVER_ID, "Executed client update %d\n", u->client_id);
-        printf("Executed client update %d\n", u->client_id);
+        printf("--------------------- EXECUTED CLIENT UPDATE %d -----------------\n", u->client_id);
 
         if (PENDING_UPDATES[u->client_id] != 0)
         {
@@ -118,6 +118,9 @@ void send_proposal()
     else if (list_length(UPDATE_QUEUE) == 0)
     {
         logger(0, LOG_LEVEL, MY_SERVER_ID, "No updates to propose\n");
+        // XXX For testing purposes we will send the client update now
+        if (MY_SERVER_ID == 1)
+            TEST_UPDATE_READY = true;
         return;
     }
     else

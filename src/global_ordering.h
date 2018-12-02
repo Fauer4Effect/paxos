@@ -23,6 +23,7 @@ extern bool PROGRESS_TIMER_SET;
 extern uint32_t *UPDATE_TIMER;
 extern int LEADER_ELECTION;
 extern int REG_LEADER;
+extern bool TEST_UPDATE_READY;
 
 void received_proposal(Proposal *p);
 void received_accept(Accept *acc);
