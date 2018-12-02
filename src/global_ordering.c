@@ -117,6 +117,7 @@ void send_proposal()
     }
     else if (list_length(UPDATE_QUEUE) == 0)
     {
+        logger(0, LOG_LEVEL, MY_SERVER_ID, "No updates to propose\n");
         return;
     }
     else

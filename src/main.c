@@ -79,6 +79,16 @@ uint32_t *LAST_ENQUEUED;          // array of timestamps, indexed by client_id
 Client_Update **PENDING_UPDATES;  // array of Client_Update messages, indexed by client_id
                                   // dynamic size
 
+Global_Slot *new_global_slot()
+{
+    Global_Slot *new_slot = malloc(sizeof(Global_Slot));
+    new_slot->proposal = 0;
+    new_slot->global_ordered_update = 0;
+    new_slot->accepts = malloc(sizeof(Accept *) * NUM_PEERS);
+
+    return new_slot;
+}
+
 // when initializing node_t objects (really all of the structs)
 // need to explicitly set the pointers to null and make sure that all the code
 // expects those to be null not zero
@@ -101,6 +111,13 @@ void initialize_globals()
 
     GLOBAL_HISTORY = malloc(sizeof(Global_Slot *) * MAX_CLIENT_ID);
     memset(GLOBAL_HISTORY, 0, sizeof(Global_Slot *) * MAX_CLIENT_ID);
+    // XXX because things like sending proposals check the global history maybe we
+    // will just initialize this with empty global slots
+    int i;
+    for (i = 0; i < MAX_CLIENT_ID; i++)
+    {
+        GLOBAL_HISTORY[i] = new_global_slot();
+    }
 
     // so we don't have everyone broadcasting the same view and causing conflicts
     if (MY_SERVER_ID == 1)

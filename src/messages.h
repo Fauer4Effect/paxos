@@ -105,7 +105,7 @@ typedef struct
     Proposal *proposal; // latest Proposal accepted for this sequence number, if any
     Globally_Ordered_Update *global_ordered_update;
     // ordered update for this sequence number, if any
-    Accept *accepts[];  // array of corresponding Accept messages, indexed by server_id
+    Accept **accepts;  // array of corresponding Accept messages, indexed by server_id
                         // size of NUM_PEERS
 } Global_Slot;
 

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "messages.h"
 #include "data_structures.h"
@@ -179,6 +180,7 @@ void apply_globally_ordered_update(Globally_Ordered_Update *msg)
 void shift_to_reg_leader()
 {
     logger(0, LOG_LEVEL, MY_SERVER_ID, "Shift to reg leader\n");
+    printf("------------------------ NEW VIEW PREPARED --------------------------\n");
     STATE = REG_LEADER;
     enqueue_unbound_pending_updates();
     remove_bound_updates_from_queue();
